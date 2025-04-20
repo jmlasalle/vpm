@@ -8,7 +8,7 @@ import json, uuid, csv
 from datetime import datetime, date, timezone
 
 from .database import create_db_and_tables, engine
-from .models import Home, Room, Equipment
+from .models import Home, Room, Equipment, equipType
 from .utils import addItem
 
 # create Typer app
@@ -73,7 +73,7 @@ def add_room(name: str, home_id: uuid.UUID):
     print(m)
 
 @app.command()
-def add_equipment(name: str, equip_type: str, room_id: uuid.UUID):
+def add_equipment(name: str, equip_type: equipType, room_id: uuid.UUID):
     """Adds a new Equipment record associated with a specific Room.
 
     Args:
@@ -345,7 +345,3 @@ def dashboard(home_id: uuid.UUID):
         rooms = [r for r in h.rooms]
         print(h)
         print(rooms)
-
-# run application
-if __name__ == "__main__":
-    app()

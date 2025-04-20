@@ -1,0 +1,19 @@
+[project]
+name = "vpm"
+version = "0.0.1"
+dependencies = [
+    "typer",
+    "sqlmodel",
+    "pydantic_extra_types",
+    "pycountry",
+    ]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[project.scripts]
+vpm = "vpm.cli:app"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

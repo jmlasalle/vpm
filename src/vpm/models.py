@@ -2,7 +2,9 @@
 from sqlmodel import Field, SQLModel, Relationship
 import uuid
 from decimal import Decimal
+from pydantic_extra_types.currency_code import Currency
 from datetime import datetime, date, timezone
+import enum
 
 
 # classes
@@ -14,6 +16,18 @@ class BaseModel(SQLModel):
         sa_column_kwargs={"onupdate": lambda: datetime.now()},
     )
 
+@enum.unique
+class equipType(enum.StrEnum):
+    oven = "Oven"
+    range = "Range"
+    stove = "Stove"
+    microwave = " Microwave"
+    dishwasher = "Dishwasher"
+    fridge = "Refredgerator"
+    freezer = "Freezer"
+    garbage_disposal = "Garbage Disposal"
+
+# tables
 class Home(BaseModel, table=True):
     name: str = Field(unique=True)
     address: str
@@ -29,7 +43,7 @@ class Room(BaseModel, table=True):
 
 class Equipment(BaseModel, table=True):
     name: str
-    equip_type: str 
+    equip_type: equipType
     room_id: uuid.UUID = Field(foreign_key="room.id")
     room: Room = Relationship(back_populates="equipment")
     home_id: uuid.UUID = Field(foreign_key="home.id")
@@ -43,3 +57,4 @@ class Equipment(BaseModel, table=True):
     install_date: date | None
     remove_date: date | None
     cost: Decimal | None = Field(decimal_places=2)
+    currency: Currency | None = Field(default="USD")
