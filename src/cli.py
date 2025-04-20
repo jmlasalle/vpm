@@ -5,32 +5,14 @@ from rich import print
 from sqlmodel import Session, select
 from decimal import Decimal
 import json, uuid, csv
-from datetime import datetime
+from datetime import datetime, date, timezone
 
-from database import create_db_and_tables, engine
-from models import Home, Room, Equipment
+from .database import create_db_and_tables, engine
+from .models import Home, Room, Equipment
+from .utils import addItem
 
 # create Typer app
 app = typer.Typer(no_args_is_help=True)
-
-# Internal Functions
-def addItem(model):
-    """Adds a SQLModel instance to the database session and commits it.
-
-    This is a general utility function to handle adding new records
-    to the database.
-
-    Args:
-        model: The SQLModel instance (e.g., Home, Room, Equipment) to add.
-
-    Returns:
-        The added and refreshed SQLModel instance with updated fields (like ID).
-    """
-    with Session(engine) as session:
-        session.add(model)
-        session.commit()
-        session.refresh(model)
-        return model
 
 # init commands
 @app.command()
@@ -99,7 +81,9 @@ def add_equipment(name: str, equip_type: str, room_id: uuid.UUID):
         equip_type: The type of equipment (e.g., 'refrigerator', 'heat pump').
         room_id: The UUID of the Room where this equipment is located.
     """
-    m = addItem(Equipment(name=name, equip_type=equip_type, room_id=room_id))
+    with Session(engine) as session:
+        home_id = session.exec(select(Room).where(Room.id == room_id)).one().home_id
+    m = addItem(Equipment(name=name, equip_type=equip_type, room_id=room_id, home_id=home_id))
     print(m)
 
 # get item commands
@@ -114,6 +98,8 @@ def get_home(home_id: Annotated[uuid.UUID, typer.Option()] = None):
         if home_id:
             h = session.exec(select(Home).where(Home.id == home_id)).one()
             print(h)
+            print(h.rooms)
+            print(h.equipment)
         else:
             r = session.exec(select(Home)).all()
             print(r)
@@ -132,8 +118,9 @@ def get_room(
     """
     with Session(engine) as session:
         if room_id: 
-            r = session.exec(select(Room).where(Room.id == room_id)).all()
+            r = session.exec(select(Room).where(Room.id == room_id)).one()
             print(r)
+            print(r.equipment)
         elif home_id:
             r = session.exec(select(Room).where(Room.home_id == home_id)).all()
             print(r)
@@ -232,8 +219,8 @@ def update_equipment(
     manual_url: Annotated[str | None, typer.Option()] = None,
     manuf_url: Annotated[str | None, typer.Option()] = None,
     serial_num: Annotated[str | None, typer.Option()] = None,
-    install_date: Annotated[datetime | None, typer.Option()] = None,
-    remove_date: Annotated[datetime | None, typer.Option()] = None,
+    install_date: Annotated[str | None, typer.Option()] = None,
+    remove_date: Annotated[str | None, typer.Option()] = None,
     cost: Annotated[float  | None, typer.Option()] = None\
     ):
     """Updates attributes of an existing piece of Equipment.
@@ -258,22 +245,27 @@ def update_equipment(
             r.name = name
         if equip_type: 
             r.equip_type = equip_type
-        if equip_type: 
+        if brand: 
             r.brand = brand
-        if equip_type: 
+        if model: 
             r.model = model
-        if equip_type: 
+        if model_number: 
             r.model_number = model_number
-        if equip_type: 
+        if manual_url: 
             r.manual_url = manual_url
-        if equip_type: 
+        if serial_num: 
             r.serial_num = serial_num
-        if equip_type: 
-            r.install_date = install_date
-        if equip_type: 
-            r.remove_date = remove_date
-        if equip_type: 
+        if install_date: 
+            r.install_date = date.fromisoformat(install_date)
+            print(f'install_date: {r.install_date}')
+        if remove_date: 
+            r.remove_date = date.fromisoformat(remove_date)
+        if cost: 
             r.cost = cost
+            session.add(r)
+        session.commit()
+        session.refresh(r)
+        print(r)
 
 #delete commands
 @app.command()
