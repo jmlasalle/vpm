@@ -6,9 +6,10 @@ from sqlmodel import Session, select
 from decimal import Decimal
 import json, uuid, csv
 from datetime import datetime, date, timezone
+from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY
 
 from .database import create_db_and_tables, engine
-from .models import Home, Room, Equipment, equipType
+from .models import Home, Room, Equipment, TaskTemplate, Task, equipType
 from .utils import addItem
 
 # create Typer app
@@ -73,6 +74,15 @@ def add_room(name: str, home_id: uuid.UUID):
     print(m)
 
 @app.command()
+def add_tasktemplate(
+    equip_type: equipType,
+    frequency: str,
+    interval: int,
+    description: str):
+    tt = addItem(TaskTemplate(name=name, frequency=frequency, interval=interval, description=description))
+    print(tt)
+
+@app.command()
 def add_equipment(name: str, equip_type: equipType, room_id: uuid.UUID):
     """Adds a new Equipment record associated with a specific Room.
 
@@ -83,7 +93,7 @@ def add_equipment(name: str, equip_type: equipType, room_id: uuid.UUID):
     """
     with Session(engine) as session:
         home_id = session.exec(select(Room).where(Room.id == room_id)).one().home_id
-    m = addItem(Equipment(name=name, equip_type=equip_type, room_id=room_id, home_id=home_id))
+    m = addItem(Equipment(name=name, equip_type=equip_type, room_id=room_id, home_id=home_id, install_date=None))
     print(m)
 
 # get item commands
