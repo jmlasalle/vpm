@@ -6,6 +6,7 @@ dependencies = [
     "sqlmodel",
     "pydantic_extra_types",
     "pycountry",
+    "python-dateutil",
     ]
 
 [tool.setuptools]
