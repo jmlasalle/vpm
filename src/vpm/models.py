@@ -1,14 +1,46 @@
 # imports
 from sqlmodel import Field, SQLModel, Relationship
+from typing import Annotated
 import uuid
 from decimal import Decimal
+from pydantic import AfterValidator
 from pydantic_extra_types.currency_code import Currency
 from datetime import datetime, date, timezone
 from dateutil.rrule import rrule, MONTHLY, YEARLY
 import enum
 
+# ---- validators ----
+equipTypes = [
+    "oven",
+    "range",
+    "stove",
+    "microwave",
+    "dishwasher",
+    "refrigerator",
+    "freezer",
+    "garbage disposal",
+    "water heater – tank",
+    "water heater – tankless",
+    "heat pump – ducted",
+    ]
 
-# classes
+def EquipType(val):
+    if val in equipTypes:
+        return val
+    else:
+        raise ValueError(f'{val} is not a valid equipment type. Call equipTypes for list of valid equipment types.')
+
+def powerSource(val):
+    s = ["electric", "gas", "wood", "propane", "diesel", "solar"]
+    if val:
+        if val in s:
+            return val
+        else:
+            raise ValueError(f'{val} is not a valid power source. Must be one of {s}')
+    else:
+        return val
+
+# ---- classes -----
 class BaseModel(SQLModel):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str
@@ -18,18 +50,7 @@ class BaseModel(SQLModel):
         sa_column_kwargs={"onupdate": lambda: datetime.now()},
     )
 
-@enum.unique
-class equipType(enum.StrEnum):
-    oven = "Oven"
-    range = "Range"
-    stove = "Stove"
-    microwave = " Microwave"
-    dishwasher = "Dishwasher"
-    fridge = "Refredgerator"
-    freezer = "Freezer"
-    garbage_disposal = "Garbage Disposal"
-
-# tables
+## ---- tables -----
 class Home(BaseModel, table=True):
     name: str = Field(unique=True)
     address: str
@@ -44,7 +65,7 @@ class Room(BaseModel, table=True):
     equipment: list["Equipment"] | None = Relationship(back_populates="room", cascade_delete=True)
 
 class Equipment(BaseModel, table=True):
-    equip_type: equipType
+    equip_type: Annotated[str, AfterValidator(EquipType)]
     room_id: uuid.UUID = Field(foreign_key="room.id")
     room: Room = Relationship(back_populates="equipment")
     home_id: uuid.UUID = Field(foreign_key="home.id")
@@ -53,6 +74,7 @@ class Equipment(BaseModel, table=True):
     brand: str | None
     model: str | None
     model_number: int | None
+    power_source: Annotated[str | None, AfterValidator(powerSource)]
     manual_url: str | None
     manuf_url: str | None
     serial_num: str | None
@@ -62,11 +84,12 @@ class Equipment(BaseModel, table=True):
     currency: Currency | None = Field(default="USD")
 
 class TaskTemplate(BaseModel, table=True):
-    equip_type: equipType
+    equip_type: Annotated[str, AfterValidator(EquipType)]
     frequency: str
     interval: int
-    description: str
-    tasks: list["Task"] = Relationship(back_populates="template")
+    description: str | None
+    link: str | None
+    tasks: list["Task"] | None = Relationship(back_populates="template")
 
 class Task(BaseModel, table=True):
     template_id: uuid.UUID = Field(foreign_key="tasktemplate.id")

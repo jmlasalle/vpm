@@ -8,9 +8,9 @@ import json, uuid, csv
 from datetime import datetime, date, timezone
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY
 
-from .database import create_db_and_tables, engine
-from .models import Home, Room, Equipment, TaskTemplate, Task, equipType
-from .utils import addItem
+from .database import engine, create_db_and_tables
+from .models import *
+from .main import *
 
 # create Typer app
 app = typer.Typer(no_args_is_help=True)
@@ -26,6 +26,7 @@ def create_db():
     """Initializes the database and creates all necessary tables."""
     db_url = create_db_and_tables()
     print(db_url)
+    addTaskTemplates()
 
 @app.command()
 def db():
@@ -38,32 +39,37 @@ def add_demo_home():
 
     Useful for quickly populating the database for testing or demonstration.
     """
-    h = add_home(name="Demo Home 2", address="145 Testing Way")
-    print(h)
-    r1 = add_room(name="Kitchen", home_id=h)
-    r2 = add_room(name="Mechanical Closet", home_id=h)
-    r3 = add_room(name="Bathroom", home_id=h)
-    add_equipment(name="Fridge", equip_type="refrigerator", room_id=r1.id)
-    add_equipment(name="Stove", equip_type="stove", room_id=r1.id)
-    add_equipment(name="Dishwasher",equip_type="dishwasher", room_id=r1)
-    add_equipment(name="Water Heater",equip_type="water heater", room_id=r2)
-    add_equipment(name="Heat Pump", equip_type="heat pump", room_id=r2)
+    h = addHome(name="Demo Home", address="145 Testing Way")
+    r1 = addRoom(name="Kitchen", home_id=h.id)
+    r2 = addRoom(name="Mechanical Closet", home_id=h.id)
+    r3 = addRoom(name="Bathroom", home_id=h.id)
+    addEquipment(name="Fridge", equip_type="refrigerator", room_id=r1.id)
+    addEquipment(name="Stove", equip_type="stove", room_id=r1.id)
+    addEquipment(name="Dishwasher",equip_type="dishwasher", room_id=r1.id)
+    addEquipment(name="Water Heater",equip_type="water heater - tank", room_id=r2.id)
+    addEquipment(name="Heat Pump", equip_type="heat pump - ducted", room_id=r2.id)
 
 
 # Add commands
 @app.command()
-def add_home(name: str, address: str):
+def add_home(
+    name: Annotated[str, typer.Option(prompt="Unique name")], 
+    address: Annotated[str, typer.Option(prompt="Street address")]
+    ):
     """Adds a new Home record to the database.
-
+    
     Args:
         name: The name for the new home.
         address: The street address for the new home.
     """
-    m = addItem(Home(name=name, address=address))
+    m = addHome(name=name, address=address)
     print(m)
 
 @app.command()
-def add_room(name: str, home_id: uuid.UUID):
+def add_room(
+    home_id: Annotated[uuid.UUID, typer.Option(prompt="Home ID")],
+    name: Annotated[str, typer.Option(prompt="Room name")]
+    ):
     """Adds a new Room record associated with a specific Home.
 
     Args:
@@ -74,16 +80,11 @@ def add_room(name: str, home_id: uuid.UUID):
     print(m)
 
 @app.command()
-def add_tasktemplate(
-    equip_type: equipType,
-    frequency: str,
-    interval: int,
-    description: str):
-    tt = addItem(TaskTemplate(name=name, frequency=frequency, interval=interval, description=description))
-    print(tt)
-
-@app.command()
-def add_equipment(name: str, equip_type: equipType, room_id: uuid.UUID):
+def add_equipment(
+    room_id: Annotated[uuid.UUID, typer.Option(prompt="Room ID")],
+    name: Annotated[str, typer.Option(prompt="Equipment name")], 
+    equip_type: Annotated[str, typer.Option(prompt="Equipment type")]
+    ):
     """Adds a new Equipment record associated with a specific Room.
 
     Args:
@@ -91,28 +92,38 @@ def add_equipment(name: str, equip_type: equipType, room_id: uuid.UUID):
         equip_type: The type of equipment (e.g., 'refrigerator', 'heat pump').
         room_id: The UUID of the Room where this equipment is located.
     """
-    with Session(engine) as session:
-        home_id = session.exec(select(Room).where(Room.id == room_id)).one().home_id
-    m = addItem(Equipment(name=name, equip_type=equip_type, room_id=room_id, home_id=home_id, install_date=None))
+    m = addEquipment(name=name, equip_type=equip_type, room_id=room_id)
     print(m)
+
+@app.command()
+def add_tasktemplate(
+    name: Annotated[str, typer.Option(prompt="Task name")],
+    equip_type: Annotated[str, typer.Option(prompt="Equipment type")],
+    frequency: Annotated[str, typer.Option(prompt="Recurrence frequency unit (e.g monthly)")],
+    interval: Annotated[int, typer.Option(prompt="Recurrence frequency interval as integer (e.g. 6 for every 6 months)")],
+    description: Annotated[str, typer.Option(prompt="Task details")] = None,
+    link: Annotated[str, typer.Option(prompt="Link to Guide")] = None
+    ):
+    tt = addItem(TaskTemplate(name=name, equip_type=equip_type.lower(), frequency=frequency.upper(), interval=interval, description=description, link=link))
+    print(tt)
+
+@app.command()
+def add_tasks(equipment_id: uuid.UUID):
+    print(equipment_id)
+    t = addTask(equipment_id=equipment_id)
+    print(t)
 
 # get item commands
 @app.command()
-def get_home(home_id: Annotated[uuid.UUID, typer.Option()] = None):
+def get_home(home_id: Annotated[uuid.UUID, typer.Option()] = None, name: Annotated[str, typer.Option()] = None):
     """Retrieves and prints Home records.
 
     If --home-id is provided, retrieves a single Home by its UUID.
+    If --name is provided, retrieves a single Home by its name.
     Otherwise, retrieves and prints all Home records.
     """
-    with Session(engine) as session:
-        if home_id:
-            h = session.exec(select(Home).where(Home.id == home_id)).one()
-            print(h)
-            print(h.rooms)
-            print(h.equipment)
-        else:
-            r = session.exec(select(Home)).all()
-            print(r)
+    h = getHome(home_id, name)
+    print(h)
 
 @app.command()
 def get_room(
@@ -126,17 +137,8 @@ def get_room(
     - --home-id: Retrieves all Rooms belonging to the specified Home UUID.
     If no options are provided, retrieves all Room records.
     """
-    with Session(engine) as session:
-        if room_id: 
-            r = session.exec(select(Room).where(Room.id == room_id)).one()
-            print(r)
-            print(r.equipment)
-        elif home_id:
-            r = session.exec(select(Room).where(Room.home_id == home_id)).all()
-            print(r)
-        else:
-            r = session.exec(select(Room)).all()
-            print(r)
+    r = getRoom(room_id, home_id)
+    print(r)
 
 @app.command()
 def get_equipment(
@@ -152,27 +154,24 @@ def get_equipment(
     - --home-id: Retrieves all Equipment located in any Room within the specified Home UUID.
     If no options are provided, retrieves all Equipment records.
     """
-    with Session(engine) as session:
-        if equipment_id:
-            print("option 1")
-            r = session.exec(select(Equipment).where(Equipment.id == equipment_id)).one()
-            print(r)
-        elif room_id:
-            print("option 2")
-            r = session.exec(select(Equipment).where(Equipment.room_id == room_id)).all()
-            print(r)
-        elif home_id:
-            print("option 3")
-            result = session.exec(select(Equipment))
-            for r in result:
-                l = []
-                if r.room.home_id == home_id:
-                    l.append(r)
-                print(l)
-        else:
-            print("option 4")
-            r = session.exec(select(Equipment)).all()
-            print(r)
+    e = getEquipment(equipment_id, room_id, home_id)
+    print(e)
+
+@app.command()
+def getTaskTemplate(
+    tt_id: Annotated[uuid.UUID, typer.Option()] = None, 
+    equip_type:Annotated[str, typer.Option()] = None):
+    tt = getTaskTemplate(tt_id=tt_id, equip_type=equip_type)
+    print(tt)
+
+@app.command()
+def get_task(
+    task_id: Annotated[uuid.UUID, typer.Option()] = None, 
+    equipment_id: Annotated[uuid.UUID, typer.Option()] = None, 
+    room_id: Annotated[uuid.UUID, typer.Option()] = None, 
+    home_id: Annotated[uuid.UUID, typer.Option()] = None):
+    t = getTask(task_id, equipment_id, room_id, home_id)
+    print(t)
 
 # update commands
 @app.command()

@@ -3,8 +3,8 @@ from fastapi import FastAPI
 
 # vpm imports
 from database import create_db_and_tables, engine
-from models import Home, Room, Equipment
-from utils import addItem
+from models import *
+from main import *
 
 app = FastAPI()
 

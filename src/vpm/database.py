@@ -1,11 +1,12 @@
 # imports
 from sqlmodel import SQLModel, create_engine
+from sqlalchemy import inspect
 
 # create db
 sqlite_file_name = "./data/vpm.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
 
-engine = create_engine(sqlite_url, echo=True)
+engine = create_engine(sqlite_url, echo=False)
 
 def create_db_and_tables():
     """Creates the SQLite database file and all tables defined via SQLModel.
