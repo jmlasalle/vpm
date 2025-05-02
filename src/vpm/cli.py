@@ -5,7 +5,7 @@ from rich import print
 from sqlmodel import Session, select
 from decimal import Decimal
 import json, uuid, csv
-from datetime import datetime, date, timezone
+from datetime import datetime, timezone
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY
 
 from .database import engine, create_db_and_tables
@@ -258,8 +258,8 @@ def update_task(
     task_id: uuid.UUID,
     name: Annotated[str, typer.Option()] = None,
     description: Annotated[str, typer.Option()] = None,
-    date_due: Annotated[date, typer.Option()] = None,
-    date_complete: Annotated[date, typer.Option()] = None,
+    date_due: Annotated[datetime, typer.Option()] = None,
+    date_complete: Annotated[datetime, typer.Option()] = None,
     complete: Annotated[bool, typer.Option()] = None):
     args = {k: v for k, v in locals().items() if v is not None}
     r = updateItem(
