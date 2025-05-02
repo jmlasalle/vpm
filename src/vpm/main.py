@@ -35,8 +35,6 @@ def addRoom(name: str, home_id: uuid.UUID):
     return m
 
 def addEquipment(name: str, equip_type: str, room_id: uuid.UUID):
-    if equip_type in equipTypes:
-        print(f'{equip_type} is valid')
     with Session(engine) as session:
         home_id = session.exec(select(Room).where(Room.id == room_id)).one().home_id
     m = addItem(Equipment(name=name, equip_type=equip_type.lower(), room_id=room_id, home_id=home_id, install_date=None))
@@ -140,9 +138,22 @@ def getTask(task_id: uuid.UUID = None, equipment_id: uuid.UUID = None, room_id: 
             r = session.exec(select(Task)).all()
             return r
 
-# Update Functions
+# ---- Update Function -----
+def updateItem(table:str, id: uuid.UUID, **kwargs):
+    with Session(engine) as session:
+        r = session.exec(select(eval(table.capitalize())).where(eval(f'{table.capitalize()}.id') == id)).one()
+        r.sqlmodel_update(kwargs)
+        session.add(r)
+        session.commit()
+        session.refresh(r)
+        return r
 
-# Delet Functions
+# ---- Delete Functions ----
+def deleteItem(table: str, id: uuid.UUID):
+    with Session(engine) as session:
+        r = session.exec(select(eval(table.capitalize())).where(eval(f'{table.capitalize()}.id') == id)).one()
+        session.delete(r)
+        session.commit()
 
 # ---- Utility Functions ----
 def nextDate(freq: str, interval: int, dt: datetime = datetime.today()):

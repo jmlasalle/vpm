@@ -186,16 +186,13 @@ def update_home(
         name: The optional new name to set for the Home.
         address: The optional new address to set for the Home.
     """
-    with Session(engine) as session:
-        r = session.exec(select(Home).where(Home.id == home_id)).one()
-        if name:
-            r.name = name
-        if address:
-            r.address = address
-        session.add(r)
-        session.commit()
-        session.refresh(r)
-        print(r)
+    args = {k: v for k, v in locals().items() if v is not None}
+    r = updateItem(
+        table="Home", 
+        id=equipment_id,
+        **args
+        )
+    print(r)
 
 @app.command()
 def update_room(
@@ -208,29 +205,29 @@ def update_room(
         room_id: The UUID of the Room record to update.
         name: The optional new name to set for the Room.
     """
-    with Session(engine) as session:
-        r = session.exec(select(Room).where(Room.id == room_id)).one()
-        if name:
-            r.name = name
-        session.add(r)
-        session.commit()
-        session.refresh(r)
-        print(r)
+    args = {k: v for k, v in locals().items() if v is not None}
+    r = updateItem(
+        table="Room", 
+        id=equipment_id,
+        **args
+        )
+    print(r)
 
 @app.command()
 def update_equipment(
     equipment_id: uuid.UUID,
-    name: Annotated[str | None, typer.Option()] = None,
-    equip_type: Annotated[str | None, typer.Option()] = None,
-    brand: Annotated[str | None, typer.Option()] = None,
-    model: Annotated[str | None, typer.Option()] = None,
-    model_number: Annotated[str | None, typer.Option()] = None,
-    manual_url: Annotated[str | None, typer.Option()] = None,
-    manuf_url: Annotated[str | None, typer.Option()] = None,
-    serial_num: Annotated[str | None, typer.Option()] = None,
-    install_date: Annotated[str | None, typer.Option()] = None,
-    remove_date: Annotated[str | None, typer.Option()] = None,
-    cost: Annotated[float  | None, typer.Option()] = None\
+    name: Annotated[str, typer.Option()] = None,
+    equip_type: Annotated[str, typer.Option()] = None,
+    brand: Annotated[str, typer.Option()] = None,
+    model: Annotated[str, typer.Option()] = None,
+    model_number: Annotated[str, typer.Option()] = None,
+    power_source: Annotated[str, typer.Option()] = None,
+    manual_url: Annotated[str, typer.Option()] = None,
+    manuf_url: Annotated[str, typer.Option()] = None,
+    serial_num: Annotated[str, typer.Option()] = None,
+    install_date: Annotated[str, typer.Option()] = None,
+    remove_date: Annotated[str, typer.Option()] = None,
+    cost: Annotated[float , typer.Option()] = None
     ):
     """Updates attributes of an existing piece of Equipment.
 
@@ -248,35 +245,31 @@ def update_equipment(
         remove_date: Optional removal date.
         cost: Optional purchase cost.
     """
-    with Session(engine) as session:
-        r = session.exec(select(Equipment).where(Equipment.id == equipment_id)).one()
-        if name:
-            r.name = name
-        if equip_type: 
-            r.equip_type = equip_type
-        if brand: 
-            r.brand = brand
-        if model: 
-            r.model = model
-        if model_number: 
-            r.model_number = model_number
-        if manual_url: 
-            r.manual_url = manual_url
-        if serial_num: 
-            r.serial_num = serial_num
-        if install_date: 
-            r.install_date = date.fromisoformat(install_date)
-            print(f'install_date: {r.install_date}')
-        if remove_date: 
-            r.remove_date = date.fromisoformat(remove_date)
-        if cost: 
-            r.cost = cost
-            session.add(r)
-        session.commit()
-        session.refresh(r)
-        print(r)
+    args = {k: v for k, v in locals().items() if v is not None}
+    r = updateItem(
+        table="Equipment", 
+        id=equipment_id,
+        **args
+        )
+    print(r)
 
-#delete commands
+@app.command()
+def update_task(
+    task_id: uuid.UUID,
+    name: Annotated[str, typer.Option()] = None,
+    description: Annotated[str, typer.Option()] = None,
+    date_due: Annotated[date, typer.Option()] = None,
+    date_complete: Annotated[date, typer.Option()] = None,
+    complete: Annotated[bool, typer.Option()] = None):
+    args = {k: v for k, v in locals().items() if v is not None}
+    r = updateItem(
+        table="Task", 
+        id=equipment_id,
+        **args
+        )
+    print(r)
+
+# ---- delete commands ----
 @app.command()
 def delete_home(home_id: uuid.UUID):
     """Deletes a Home record and potentially associated Rooms/Equipment (depending on cascades).
@@ -284,14 +277,7 @@ def delete_home(home_id: uuid.UUID):
     Args:
         home_id: The UUID of the Home record to delete.
     """
-    with Session(engine) as session:
-        r = session.exec(select(Home).where(Home.id == home_id)).one()
-        session.delete(r)
-        session.commit()
-        # confirm delete
-        rr = session.exec(select(Home).where(Home.id == home_id)).one()
-        if rr is None:
-            print(f'Home deleted: {r}')
+    deleteItem(table="Home", id=home_id)
 
 @app.command()
 def delete_room(room_id: uuid.UUID):
@@ -300,14 +286,7 @@ def delete_room(room_id: uuid.UUID):
     Args:
         room_id: The UUID of the Room record to delete.
     """
-    with Session(engine) as session:
-        r = session.exec(select(Room).where(Room.id == room_id)).one()
-        session.delete(r)
-        session.commit()
-        # confirm delete
-        rr = session.exec(select(Room).where(Room.id == room_id)).one()
-        if rr is None:
-            print(f'Room deleted: {r}')
+    deleteItem(table="Room", id=room_id)
 
 @app.command()
 def delete_equipment(equipment_id: uuid.UUID):
@@ -316,14 +295,16 @@ def delete_equipment(equipment_id: uuid.UUID):
     Args:
         equipment_id: The UUID of the Equipment record to delete.
     """
-    with Session(engine) as session:
-        r = session.exec(select(Equipment).where(Equipment.id == equipment_id)).one()
-        session.delete(r)
-        session.commit()
-        # confirm delete
-        rr = session.exec(select(Equipment).where(Equipment.id == equipment_id)).one()
-        if rr is None:
-            print(f'Equipment deleted: {r}')
+    deleteItem(table="Equipment", id=equipment_id)
+
+@app.command()
+def delete_equipment(equipment_id: uuid.UUID):
+    """Deletes a Task record.
+
+    Args:
+        task_id: The UUID of the Task record to delete.
+    """
+    deleteItem(table="Task", id=task_id)
 
 # Onboarding
 @app.command()
