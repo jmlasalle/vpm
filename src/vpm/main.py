@@ -39,7 +39,6 @@ def addEquipment(name: str, equip_type: str, room_id: uuid.UUID):
         home_id = session.exec(select(Room).where(Room.id == room_id)).one().home_id
     m = addItem(Equipment(name=name, equip_type=equip_type.lower(), room_id=room_id, home_id=home_id, install_date=None))
     t = addTask(m.id)
-    print(t)
     return m
 
 def addTaskTemplate(
@@ -48,8 +47,6 @@ def addTaskTemplate(
     interval: int,
     description: str = None,
     link: str = None):
-    if equip_type in equipTypes:
-        print(f'{equip_type} is valid')
     tt = addItem(TaskTemplate(name=name, equip_type=equip_type.lower(), frequency=frequency, interval=interval, description=description, link=link))
     return tt
 
@@ -73,10 +70,10 @@ def getHome(home_id: uuid.UUID = None, name:str = None):
     with Session(engine) as session:
         if home_id:
             h = session.exec(select(Home).where(Home.id == home_id)).one()
-            return (h, h.rooms, h.equipment)
+            return h
         elif name:
             h = session.exec(select(Home).where(Home.name == name)).one()
-            return (h, h.rooms, h.equipment)
+            return h
         else:
             r = session.exec(select(Home)).all()
             return r
@@ -164,9 +161,10 @@ def nextDate(freq: str, interval: int, dt: datetime = datetime.today()):
 
 # ---- DB Functions ----
 def addTaskTemplates(path: str = "./data/task-templates.csv"):
+    l = 0
     with open(path) as f:
         for t in csv.DictReader(f):
-            addItem(TaskTemplate(
+            tt = addItem(TaskTemplate(
                 name= t["name"],
                 equip_type = t['equip_type'],
                 frequency = t['frequency'],
@@ -174,6 +172,19 @@ def addTaskTemplates(path: str = "./data/task-templates.csv"):
                 description = t['description'],
                 link = t['link']
                 ))
+            l += 1
+    return l
+
+def addDemoHome():
+    h = addHome(name="Demo Home", address="145 Testing Way")
+    r1 = addRoom(name="Kitchen", home_id=h.id)
+    r2 = addRoom(name="Mechanical Closet", home_id=h.id)
+    r3 = addRoom(name="Bathroom", home_id=h.id)
+    e1 = addEquipment(name="Fridge", equip_type="refrigerator", room_id=r1.id)
+    e2 = addEquipment(name="Stove", equip_type="stove", room_id=r1.id)
+    e3 = addEquipment(name="Dishwasher",equip_type="dishwasher", room_id=r1.id)
+    e4 = addEquipment(name="Water Heater",equip_type="water heater - tank", room_id=r2.id)
+    e5 = addEquipment(name="Heat Pump", equip_type="heat pump - ducted", room_id=r2.id)
 
 def getSchemas():
     inspector = inspect(engine)

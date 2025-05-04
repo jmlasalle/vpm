@@ -22,33 +22,31 @@ def version():
     print("Version 0.01")
 
 @app.command()
-def create_db():
+def create_db(overwrite: Annotated[bool, typer.Option("--overwrite", prompt="Overwrite existing DB?")] = False):
     """Initializes the database and creates all necessary tables."""
-    db_url = create_db_and_tables()
-    print(db_url)
-    addTaskTemplates()
-
+    try:
+        if overwrite:
+            db_url = create_db_and_tables(overwrite=overwrite)
+        else:
+            db_url = create_db_and_tables()
+        print(db_url)
+        try:
+            t = addTaskTemplates()
+            print(f'Added {t} task templates.')
+        except Exception as e:
+            print(e)
+        try:
+            d = addDemoHome()
+            print(f'Added demo home.')
+        except Exception as e:
+            print(e)
+    except FileExistsError as e:
+        print(e)
+    
 @app.command()
 def db():
     """Prints the database engine configuration (including URL)."""
     print(engine)
-
-@app.command()
-def add_demo_home():
-    """Adds a predefined set of demo data (Home, Rooms, Equipment).
-
-    Useful for quickly populating the database for testing or demonstration.
-    """
-    h = addHome(name="Demo Home", address="145 Testing Way")
-    r1 = addRoom(name="Kitchen", home_id=h.id)
-    r2 = addRoom(name="Mechanical Closet", home_id=h.id)
-    r3 = addRoom(name="Bathroom", home_id=h.id)
-    addEquipment(name="Fridge", equip_type="refrigerator", room_id=r1.id)
-    addEquipment(name="Stove", equip_type="stove", room_id=r1.id)
-    addEquipment(name="Dishwasher",equip_type="dishwasher", room_id=r1.id)
-    addEquipment(name="Water Heater",equip_type="water heater - tank", room_id=r2.id)
-    addEquipment(name="Heat Pump", equip_type="heat pump - ducted", room_id=r2.id)
-
 
 # Add commands
 @app.command()

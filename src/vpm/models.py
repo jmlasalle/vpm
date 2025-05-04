@@ -5,7 +5,7 @@ import uuid
 from decimal import Decimal
 from pydantic import AfterValidator
 from pydantic_extra_types.currency_code import Currency
-from datetime import datetime, date, timezone
+from datetime import datetime, timezone
 from dateutil.rrule import rrule, MONTHLY, YEARLY
 import enum
 
@@ -78,8 +78,8 @@ class Equipment(BaseModel, table=True):
     manual_url: str | None
     manuf_url: str | None
     serial_num: str | None
-    install_date: date | None
-    remove_date: date | None
+    install_date: datetime | None
+    remove_date: datetime | None
     cost: Decimal | None = Field(decimal_places=2)
     currency: Currency | None = Field(default="USD")
 
@@ -99,6 +99,6 @@ class Task(BaseModel, table=True):
     home_id: uuid.UUID = Field(foreign_key="home.id")
     home: Home = Relationship(back_populates="tasks")
     description: str | None
-    date_due: date
-    date_complete: date | None
+    date_due: datetime
+    date_complete: datetime | None
     complete: bool = Field(default= False)
