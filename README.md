@@ -6,9 +6,9 @@ Virtual Property Manager (VPM) is the the true smarthome OS. VPM is guiding by c
 4. **Unenshitifiable:** Product design must make it impossible to enshitify.
 
 A smart home:
-6. knows itself.
-7. maintains itself
-8. just works  
+1. knows itself.
+2. maintains itself
+3. just works  
 
 ## products
 ### vpm-cli
