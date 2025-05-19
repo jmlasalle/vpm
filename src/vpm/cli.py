@@ -4,42 +4,52 @@ from typing_extensions import Annotated
 from rich import print
 from sqlmodel import Session, select
 from decimal import Decimal
-import json, uuid, csv
+import json, uuid, csv, os
 from datetime import datetime, timezone
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY
+from pathlib import Path
 
-from .database import engine, create_db_and_tables
+from .database import create_db_and_tables, engine
 from .models import *
-from .main import *
+from .core import *
+import src.vpm.home
+
+APP_NAME = "vpm-cli"
+VERSION = "0.01"
 
 # create Typer app
 app = typer.Typer(no_args_is_help=True)
+app.add_typer(src.vpm.home.app, name="home")
 
 # init commands
+@app.callback(invoke_without_command=True)
+def config():
+    """Creates config file if it doesn't exists. Runs before every command"""
+    app_dir = typer.get_app_dir(APP_NAME)
+    config_path: Path = Path(app_dir) / "config.json"
+    if not os.path.exists(app_dir):
+        os.mkdir(app_dir)
+    if not config_path.is_file():
+        config = {
+            "app_name":APP_NAME,
+            "version": VERSION,
+            "username": "",
+            "subscribed": "False",
+            "token": ""}
+        json_object = json.dumps(config, indent=4)
+        config_path.write_text(json_object)
+
 @app.command()
 def version():
     """Prints the application's version number."""
-    print("Version 0.01")
+    print(f'Version {VERSION}')
 
 @app.command()
 def create_db(overwrite: Annotated[bool, typer.Option("--overwrite", prompt="Overwrite existing DB?")] = False):
     """Initializes the database and creates all necessary tables."""
     try:
-        if overwrite:
-            db_url = create_db_and_tables(overwrite=overwrite)
-        else:
-            db_url = create_db_and_tables()
+        db_url = create_db_and_tables(db_path=sqlite_file_name, overwrite=overwrite)
         print(db_url)
-        try:
-            t = addTaskTemplates()
-            print(f'Added {t} task templates.')
-        except Exception as e:
-            print(e)
-        try:
-            d = addDemoHome()
-            print(f'Added demo home.')
-        except Exception as e:
-            print(e)
     except FileExistsError as e:
         print(e)
     
@@ -54,72 +64,45 @@ def add_home(
     name: Annotated[str, typer.Option(prompt="Unique name")], 
     address: Annotated[str, typer.Option(prompt="Street address")]
     ):
-    """Adds a new Home record to the database.
-    
-    Args:
-        name: The name for the new home.
-        address: The street address for the new home.
-    """
-    m = addHome(name=name, address=address)
-    print(m)
+    home = addHome(name=name, address=address)
+    print(json.dumps(home.model_dump(), default=serialize))
 
 @app.command()
 def add_room(
     home_id: Annotated[uuid.UUID, typer.Option(prompt="Home ID")],
     name: Annotated[str, typer.Option(prompt="Room name")]
     ):
-    """Adds a new Room record associated with a specific Home.
-
-    Args:
-        name: The name for the new room (e.g., 'Kitchen', 'Bedroom').
-        home_id: The UUID of the Home this room belongs to.
-    """
-    m = addItem(Room(name=name, home_id=home_id))
-    print(m)
+    room = addRoom(name=name, home_id=home_id)
+    print(room)
 
 @app.command()
-def add_equipment(
+def add_element(
     room_id: Annotated[uuid.UUID, typer.Option(prompt="Room ID")],
-    name: Annotated[str, typer.Option(prompt="Equipment name")], 
-    equip_type: Annotated[str, typer.Option(prompt="Equipment type")]
+    name: Annotated[str, typer.Option(prompt="Element name")], 
+    equip_type: Annotated[str, typer.Option(prompt="Element type")],
+    install_date: Annotated[datetime, typer.Option(prompt="Installation date")] = None
     ):
-    """Adds a new Equipment record associated with a specific Room.
-
-    Args:
-        name: The name for the new equipment (e.g., 'Main Fridge').
-        equip_type: The type of equipment (e.g., 'refrigerator', 'heat pump').
-        room_id: The UUID of the Room where this equipment is located.
-    """
-    m = addEquipment(name=name, equip_type=equip_type, room_id=room_id)
-    print(m)
+    with Session(engine) as session:
+        home_id = session.exec(select(Room).where(Room.id == room_id)).one().home_id
+    element = addElement(name=name, equip_type=equip_type.lower(), room_id=room_id, home_id=home_id, install_date=install_date)
+    print(element)
 
 @app.command()
-def add_tasktemplate(
+def add_task(
+    element_id: Annotated[uuid.UUID, typer.Option(prompt="ID for the element the taks is link to")],
     name: Annotated[str, typer.Option(prompt="Task name")],
-    equip_type: Annotated[str, typer.Option(prompt="Equipment type")],
-    frequency: Annotated[str, typer.Option(prompt="Recurrence frequency unit (e.g monthly)")],
-    interval: Annotated[int, typer.Option(prompt="Recurrence frequency interval as integer (e.g. 6 for every 6 months)")],
-    description: Annotated[str, typer.Option(prompt="Task details")] = None,
-    link: Annotated[str, typer.Option(prompt="Link to Guide")] = None
+    description: Annotated[str | None, typer.Option(prompt="Task description")],
+    date_due: Annotated[str | None, typer.Option(prompt="Due date in YYYY-MM-DD format")] = None
     ):
-    tt = addItem(TaskTemplate(name=name, equip_type=equip_type.lower(), frequency=frequency.upper(), interval=interval, description=description, link=link))
-    print(tt)
-
-@app.command()
-def add_tasks(equipment_id: uuid.UUID):
-    print(equipment_id)
-    t = addTask(equipment_id=equipment_id)
-    print(t)
+    task = addTask(element_id=element_id, name=name, description=description, date_due=datetime.strptime(date_due, '%Y-%m-%d'))
+    print(task)
 
 # get item commands
 @app.command()
-def get_home(home_id: Annotated[uuid.UUID, typer.Option()] = None, name: Annotated[str, typer.Option()] = None):
-    """Retrieves and prints Home records.
-
-    If --home-id is provided, retrieves a single Home by its UUID.
-    If --name is provided, retrieves a single Home by its name.
-    Otherwise, retrieves and prints all Home records.
-    """
+def get_home(
+    home_id: Annotated[uuid.UUID, typer.Option(prompt="Home ID")] = None, 
+    name: Annotated[str, typer.Option(prompt="Home name")] = None
+    ) -> dict:
     h = getHome(home_id, name)
     print(h)
 
@@ -139,20 +122,20 @@ def get_room(
     print(r)
 
 @app.command()
-def get_equipment(
-    equipment_id: Annotated[uuid.UUID, typer.Option()] = None, 
+def get_element(
+    element_id: Annotated[uuid.UUID, typer.Option()] = None, 
     room_id: Annotated[uuid.UUID, typer.Option()] = None, 
     home_id: Annotated[uuid.UUID, typer.Option()] = None
     ):
-    """Retrieves and prints Equipment records.
+    """Retrieves and prints Element records.
 
     Can filter by:
-    - --equipment-id: Retrieves a single piece of Equipment by its UUID.
-    - --room-id: Retrieves all Equipment belonging to the specified Room UUID.
-    - --home-id: Retrieves all Equipment located in any Room within the specified Home UUID.
-    If no options are provided, retrieves all Equipment records.
+    - --element-id: Retrieves a single piece of Element by its UUID.
+    - --room-id: Retrieves all Element belonging to the specified Room UUID.
+    - --home-id: Retrieves all Element located in any Room within the specified Home UUID.
+    If no options are provided, retrieves all Element records.
     """
-    e = getEquipment(equipment_id, room_id, home_id)
+    e = getElement(element_id, room_id, home_id)
     print(e)
 
 @app.command()
@@ -165,10 +148,10 @@ def getTaskTemplate(
 @app.command()
 def get_task(
     task_id: Annotated[uuid.UUID, typer.Option()] = None, 
-    equipment_id: Annotated[uuid.UUID, typer.Option()] = None, 
+    element_id: Annotated[uuid.UUID, typer.Option()] = None, 
     room_id: Annotated[uuid.UUID, typer.Option()] = None, 
     home_id: Annotated[uuid.UUID, typer.Option()] = None):
-    t = getTask(task_id, equipment_id, room_id, home_id)
+    t = getTask(task_id, element_id, room_id, home_id)
     print(t)
 
 # update commands
@@ -187,7 +170,7 @@ def update_home(
     args = {k: v for k, v in locals().items() if v is not None}
     r = updateItem(
         table="Home", 
-        id=equipment_id,
+        id=element_id,
         **args
         )
     print(r)
@@ -206,14 +189,14 @@ def update_room(
     args = {k: v for k, v in locals().items() if v is not None}
     r = updateItem(
         table="Room", 
-        id=equipment_id,
+        id=element_id,
         **args
         )
     print(r)
 
 @app.command()
-def update_equipment(
-    equipment_id: uuid.UUID,
+def update_element(
+    element_id: uuid.UUID,
     name: Annotated[str, typer.Option()] = None,
     equip_type: Annotated[str, typer.Option()] = None,
     brand: Annotated[str, typer.Option()] = None,
@@ -227,12 +210,12 @@ def update_equipment(
     remove_date: Annotated[str, typer.Option()] = None,
     cost: Annotated[float , typer.Option()] = None
     ):
-    """Updates attributes of an existing piece of Equipment.
+    """Updates attributes of an existing piece of Element.
 
     Args:
-        equipment_id: The UUID of the Equipment record to update.
+        element_id: The UUID of the Element record to update.
         name: Optional new name.
-        equip_type: Optional new equipment type.
+        equip_type: Optional new element type.
         brand: Optional brand name.
         model: Optional model identifier.
         model_number: Optional model number.
@@ -245,15 +228,15 @@ def update_equipment(
     """
     args = {k: v for k, v in locals().items() if v is not None}
     r = updateItem(
-        table="Equipment", 
-        id=equipment_id,
+        table="Element", 
+        id=element_id,
         **args
         )
     print(r)
 
 @app.command()
 def update_task(
-    task_id: uuid.UUID,
+    task_id: Annotated[uuid.UUID, typer.Option()],
     name: Annotated[str, typer.Option()] = None,
     description: Annotated[str, typer.Option()] = None,
     date_due: Annotated[datetime, typer.Option()] = None,
@@ -262,46 +245,26 @@ def update_task(
     args = {k: v for k, v in locals().items() if v is not None}
     r = updateItem(
         table="Task", 
-        id=equipment_id,
+        id=element_id,
         **args
         )
-    print(r)
+    print(j)
 
 # ---- delete commands ----
 @app.command()
-def delete_home(home_id: uuid.UUID):
-    """Deletes a Home record and potentially associated Rooms/Equipment (depending on cascades).
-
-    Args:
-        home_id: The UUID of the Home record to delete.
-    """
+def delete_home(home_id: Annotated[uuid.UUID, typer.Option(prompt="Home ID")]) -> None:
     deleteItem(table="Home", id=home_id)
 
 @app.command()
-def delete_room(room_id: uuid.UUID):
-    """Deletes a Room record. Associated Equipment might also be affected depending on database setup.
-
-    Args:
-        room_id: The UUID of the Room record to delete.
-    """
+def delete_room(room_id: Annotated[uuid.UUID, typer.Option(prompt="Room ID")]) -> None:
     deleteItem(table="Room", id=room_id)
 
 @app.command()
-def delete_equipment(equipment_id: uuid.UUID):
-    """Deletes an Equipment record.
-
-    Args:
-        equipment_id: The UUID of the Equipment record to delete.
-    """
-    deleteItem(table="Equipment", id=equipment_id)
+def delete_element(element_id: Annotated[uuid.UUID, typer.Option(prompt="Element ID")]) -> None:
+    deleteItem(table="Element", id=element_id)
 
 @app.command()
-def delete_equipment(equipment_id: uuid.UUID):
-    """Deletes a Task record.
-
-    Args:
-        task_id: The UUID of the Task record to delete.
-    """
+def delete_task(element_id: Annotated[uuid.UUID, typer.Option(prompt="Task ID")]) -> None:
     deleteItem(table="Task", id=task_id)
 
 # Onboarding
@@ -315,16 +278,19 @@ def Onboard():
     h = add_home(hname, haddress)
     print(f'Now lets add your first room.')
     add_more_rooms = "y"
-    while add_more_rooms == "y":
-            rname = typer.prompt("Room name:")
-            r = add_room(rname, h.id)
-            add_more_rooms = typer.prompt("Do you want to add another room(y/n)?")
-            # add_more_equip = "y"
-            # print(f'What equipment does {rname} have?')
-            # while add_more_equip == "y"
-            #     ename = typer.prompt("what nickname do you want for the first equipment:")
-            #     add_equipment(name = room_id=r.id)
-            #     add_more_equip = typer.prompt("Is there more equipment in the room to add (y/n)?")
+    while add_more_rooms.lower() == "y":
+        rname = typer.prompt("Room name")
+        r = add_room(home_id=h.id, name=rname)
+        add_more_equip = "y"
+        print(f'What elment does {rname} have?')
+        while add_more_equip.lower() == "y":
+            ename = typer.prompt("what nickname do you want for the element")
+            etype = typer.prompt(f'What is {ename}\'s element type?')
+            edate = typer.prompt(f'What date was {ename} installed (YYYY-MM-DD)')
+            add_element(room_id=r.id, name = ename, equip_type=etype, install_date=datetime.strptime(edate, '%Y-%m-%d'))
+            add_more_equip = typer.prompt(f'Are there more elements in {rname} to add (y/n)?')
+        add_more_rooms = typer.prompt("Do you want to add another room(y/n)?")
+            
 
 @app.command()
 def dashboard(home_id: uuid.UUID):
@@ -333,3 +299,6 @@ def dashboard(home_id: uuid.UUID):
         rooms = [r for r in h.rooms]
         print(h)
         print(rooms)
+
+if __name__ == "__main__":
+    app()

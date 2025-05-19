@@ -9,17 +9,6 @@ from .models import *
 
 # Add Functions
 def addItem(model):
-    """Adds a SQLModel instance to the database session and commits it.
-
-    This is a general utility function to handle adding new records
-    to the database.
-
-    Args:
-        model: The SQLModel instance (e.g., Home, Room, Equipment) to add.
-
-    Returns:
-        The added and refreshed SQLModel instance with updated fields (like ID).
-    """
     with Session(engine) as session:
         session.add(model)
         session.commit()
@@ -34,32 +23,38 @@ def addRoom(name: str, home_id: uuid.UUID):
     m = addItem(Room(name=name, home_id=home_id))
     return m
 
-def addEquipment(name: str, equip_type: str, room_id: uuid.UUID):
+def addElement(name: str, equip_type: str, room_id: uuid.UUID):
     with Session(engine) as session:
         home_id = session.exec(select(Room).where(Room.id == room_id)).one().home_id
-    m = addItem(Equipment(name=name, equip_type=equip_type.lower(), room_id=room_id, home_id=home_id, install_date=None))
+    m = addItem(Element(name=name, equip_type=equip_type.lower(), room_id=room_id, home_id=home_id, install_date=None))
     t = addTask(m.id)
     return m
 
-def addTaskTemplate(
+def addTaskType(
     equip_type: str,
     frequency: str,
     interval: int,
     description: str = None,
     link: str = None):
-    tt = addItem(TaskTemplate(name=name, equip_type=equip_type.lower(), frequency=frequency, interval=interval, description=description, link=link))
+    tt = addItem(TaskType(name=name, equip_type=equip_type.lower(), frequency=frequency, interval=interval, description=description, link=link))
     return tt
 
-def addTask(equipment_id: uuid.UUID):
-    equipment = getEquipment(equipment_id = equipment_id)
-    templates = getTaskTemplate(equip_type = equipment.equip_type)
+def addTask(element_id: uuid.UUID, name: str, description: str, date_due: datetime) -> Task:
+    element = getElement(element_id = element_id)
+    task = addItem(Task(name = name, element_id = element_id, home_id = element.home_id, description = description, date_due = date_due))
+    return task
+
+
+def addTaskFromTemplate(element_id: uuid.UUID):
+    element = getElement(element_id = element_id)
+    templates = getTaskType(equip_type = element.equip_type)
     tasks = list()
     for tt in templates:
         task = addItem(Task(
             name = tt.name,
             template_id = tt.id,
-            equipment_id = equipment.id,
-            home_id = equipment.home_id,
+            element_id = element.id,
+            home_id = element.home_id,
             description = tt.description,
             date_due = nextDate(freq=tt.frequency, interval=tt.interval)))
         tasks.append(task)
@@ -90,40 +85,40 @@ def getRoom(room_id: uuid.UUID = None, home_id: uuid.UUID = None):
             r = session.exec(select(Room)).all()
             return r
 
-def getEquipment(equipment_id: uuid.UUID = None, room_id: uuid.UUID = None, home_id: uuid.UUID = None):
+def getElement(element_id: uuid.UUID = None, room_id: uuid.UUID = None, home_id: uuid.UUID = None):
     with Session(engine) as session:
-        if equipment_id:
-            r = session.exec(select(Equipment).where(Equipment.id == equipment_id)).one()
+        if element_id:
+            r = session.exec(select(Element).where(Element.id == element_id)).one()
             return r
         elif room_id:
-            r = session.exec(select(Equipment).where(Equipment.room_id == room_id)).all()
+            r = session.exec(select(Element).where(Element.room_id == room_id)).all()
             return r
         elif home_id:
-            r = session.exec(select(Equipment).where(Equipment.home_id == home_id)).all()
+            r = session.exec(select(Element).where(Element.home_id == home_id)).all()
             return r
         else:
-            r = session.exec(select(Equipment)).all()
+            r = session.exec(select(Element)).all()
             return r
 
-def getTaskTemplate(tt_id: uuid.UUID = None, equip_type:str = None):
+def getTaskType(tt_id: uuid.UUID = None, equip_type:str = None):
     with Session(engine) as session:
         if tt_id:
-            t = session.exec(select(TaskTemplate).where(TaskTemplate.id == tt_id)).one()
+            t = session.exec(select(TaskType).where(TaskType.id == tt_id)).one()
             return (t)
         elif equip_type:
-            t = session.exec(select(TaskTemplate).where(TaskTemplate.equip_type == equip_type)).all()
+            t = session.exec(select(TaskType).where(TaskType.equip_type == equip_type)).all()
             return (t)
         else:
-            r = session.exec(select(TaskTemplate)).all()
+            r = session.exec(select(TaskType)).all()
             return r
 
-def getTask(task_id: uuid.UUID = None, equipment_id: uuid.UUID = None, room_id: uuid.UUID = None, home_id: uuid.UUID = None):
+def getTask(task_id: uuid.UUID = None, element_id: uuid.UUID = None, room_id: uuid.UUID = None, home_id: uuid.UUID = None):
     with Session(engine) as session:
         if task_id:
             r = session.exec(select(Task).where(Task.id == task_id)).one()
             return r
-        elif equipment_id:
-            r = session.exec(select(Task).where(Task.equipmen_id == equipment_id)).all()
+        elif element_id:
+            r = session.exec(select(Task).where(Task.equipmen_id == element_id)).all()
             return r
         elif room_id:
             r = session.exec(select(Task).where(Task.room_id == room_id)).all()
@@ -159,12 +154,21 @@ def nextDate(freq: str, interval: int, dt: datetime = datetime.today()):
     else:
         raise TypeError(f'{freq.upper()} must be one of YEARLY, MONTHLY, WEEKLY, DAILY')
 
+def serialize(obj) -> str:
+    try:
+        if isinstance(obj, (date, datetime)):
+            return obj.isoformat()
+        else:
+            return str(obj)
+    except:
+        raise TypeError("Object cannot be converted to string")
+
 # ---- DB Functions ----
-def addTaskTemplates(path: str = "./data/task-templates.csv"):
+def addTaskTypes(path: str = "./data/task-templates.csv"):
     l = 0
     with open(path) as f:
         for t in csv.DictReader(f):
-            tt = addItem(TaskTemplate(
+            tt = addItem(TaskType(
                 name= t["name"],
                 equip_type = t['equip_type'],
                 frequency = t['frequency'],
@@ -180,11 +184,11 @@ def addDemoHome():
     r1 = addRoom(name="Kitchen", home_id=h.id)
     r2 = addRoom(name="Mechanical Closet", home_id=h.id)
     r3 = addRoom(name="Bathroom", home_id=h.id)
-    e1 = addEquipment(name="Fridge", equip_type="refrigerator", room_id=r1.id)
-    e2 = addEquipment(name="Stove", equip_type="stove", room_id=r1.id)
-    e3 = addEquipment(name="Dishwasher",equip_type="dishwasher", room_id=r1.id)
-    e4 = addEquipment(name="Water Heater",equip_type="water heater - tank", room_id=r2.id)
-    e5 = addEquipment(name="Heat Pump", equip_type="heat pump - ducted", room_id=r2.id)
+    e1 = addElement(name="Fridge", equip_type="refrigerator", room_id=r1.id)
+    e2 = addElement(name="Stove", equip_type="stove", room_id=r1.id)
+    e3 = addElement(name="Dishwasher",equip_type="dishwasher", room_id=r1.id)
+    e4 = addElement(name="Water Heater",equip_type="water heater - tank", room_id=r2.id)
+    e5 = addElement(name="Heat Pump", equip_type="heat pump - ducted", room_id=r2.id)
 
 def getSchemas():
     inspector = inspect(engine)
