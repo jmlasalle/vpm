@@ -50,44 +50,38 @@ class Room(BaseModel, table=True):
     home: Home = Relationship(back_populates="rooms")
     element: list["Element"] | None = Relationship(back_populates="room", cascade_delete=True)
 
-class ElementType(BaseModel):
+class ElementType(BaseModel, table=True):
     brand: str | None
     model: str | None
     model_number: int | None
-    power_source: powerSource | None = Field(default=None)
     manual_url: str | None
-    manuf_url: str | None
+    manufacture_url: str | None
     cost: Decimal | None = Field(decimal_places=2)
     currency: str| None = Field(default=None)
 
 
-class Element(BaseModel, table=True):
+class Element(ElementType, table=True):
     equip_type: str
     room_id: uuid.UUID = Field(foreign_key="room.id")
     room: Room = Relationship(back_populates="element")
     home_id: uuid.UUID = Field(foreign_key="home.id")
     home: Home = Relationship(back_populates="element")
     tasks: list["Task"] | None = Relationship(back_populates="element", cascade_delete=True)
-    brand: str | None
-    model: str | None
-    model_number: int | None
-    power_source: str | None
-    manual_url: str | None
-    manuf_url: str | None
     serial_num: str | None
     install_date: datetime | None
     remove_date: datetime | None
     cost: Decimal | None = Field(decimal_places=2)
     currency: str | None = Field(default=None)
 
-class TaskType(BaseModel):
-    equip_type: equipTypes
-    frequency: str
-    interval: int
+class TaskType(BaseModel, table=True):
     description: str | None
+    interval: int
+    interval_unit: str
     link: str | None
+    equip_type: equipTypes
 
-class Task(BaseModel, table=True):
+
+class Task(TaskType, table=True):
     element_id: uuid.UUID | None = Field(foreign_key="element.id")
     element: Element = Relationship(back_populates="tasks")
     home_id: uuid.UUID = Field(foreign_key="home.id")
@@ -96,3 +90,17 @@ class Task(BaseModel, table=True):
     date_due: datetime | None
     date_complete: datetime | None
     complete: bool = Field(default= False)
+    cost: Decimal | None
+
+class PartType(BaseModel, table=True):
+    brand: str | None
+    model: str | None
+    model_number: str | None
+    cost: Decimal | None
+
+class Part(PartType, table=True):
+    serial_num: str | None
+    install_date: datetime | None
+    remove_date: datetime | None
+    task_id: uuid.UUID = Field(foreign_key="task.id")
+    task

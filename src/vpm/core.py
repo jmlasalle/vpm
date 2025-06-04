@@ -8,29 +8,29 @@ from .database import *
 from .models import *
 
 # Add Functions
-def addItem(model):
+def add_item(model):
     with Session(engine) as session:
         session.add(model)
         session.commit()
         session.refresh(model)
         return model
 
-def addHome(name: str, address: str):
+def add_home(name: str, address: str):
     m = addItem(Home(name=name, address=address))
     return m
 
-def addRoom(name: str, home_id: uuid.UUID):
+def add_room(name: str, home_id: uuid.UUID):
     m = addItem(Room(name=name, home_id=home_id))
     return m
 
-def addElement(name: str, equip_type: str, room_id: uuid.UUID):
+def add_element(name: str, equip_type: str, room_id: uuid.UUID):
     with Session(engine) as session:
         home_id = session.exec(select(Room).where(Room.id == room_id)).one().home_id
     m = addItem(Element(name=name, equip_type=equip_type.lower(), room_id=room_id, home_id=home_id, install_date=None))
     t = addTask(m.id)
     return m
 
-def addTaskType(
+def add_task_type(
     equip_type: str,
     frequency: str,
     interval: int,
@@ -39,13 +39,13 @@ def addTaskType(
     tt = addItem(TaskType(name=name, equip_type=equip_type.lower(), frequency=frequency, interval=interval, description=description, link=link))
     return tt
 
-def addTask(element_id: uuid.UUID, name: str, description: str, date_due: datetime) -> Task:
+def add_task(element_id: uuid.UUID, name: str, description: str, date_due: datetime) -> Task:
     element = getElement(element_id = element_id)
     task = addItem(Task(name = name, element_id = element_id, home_id = element.home_id, description = description, date_due = date_due))
     return task
 
 
-def addTaskFromTemplate(element_id: uuid.UUID):
+def add_task_from_template(element_id: uuid.UUID):
     element = getElement(element_id = element_id)
     templates = getTaskType(equip_type = element.equip_type)
     tasks = list()
@@ -161,7 +161,7 @@ def serialize(obj) -> str:
         else:
             return str(obj)
     except:
-        raise TypeError("Object cannot be converted to string")
+        raise TypeError("Object cannot be converted to stringN")
 
 # ---- DB Functions ----
 def addTaskTypes(path: str = "./data/task-templates.csv"):
