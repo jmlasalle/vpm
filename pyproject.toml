@@ -6,13 +6,13 @@ dependencies = [
     "sqlmodel",
     "pycountry",
     "python-dateutil",
-    ]
-
-[tool.setuptools]
-package-dir = {"" = "src"}
+]
 
 [project.scripts]
 vpm = "vpm.cli:app"
+
+[tool.setuptools]
+packages = ["vpm"]
 
 [build-system]
 requires = ["setuptools"]

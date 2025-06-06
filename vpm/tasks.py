@@ -1,0 +1,110 @@
+from typing import Optional
+import typer
+from uuid import UUID
+from .services.elements import TaskService
+from .models.elements import Task, TaskType
+from .utils.logging import logger
+from typing_extensions import Annotated
+from rich import print
+import json
+from datetime import datetime, timedelta
+
+app = typer.Typer(no_args_is_help=True)
+task_service = TaskService()
+
+def serialize(obj):
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if isinstance(obj, UUID):
+        return str(obj)
+    raise TypeError(f"Type {type(obj)} not serializable")
+
+@app.command(help="Adds a new task to the local database.")
+def add(
+    name: Annotated[str, typer.Option(prompt="Task name")],
+    type: Annotated[TaskType, typer.Option(prompt="Task type")] = "Maintenance",
+    description: Annotated[str, typer.Option(prompt="Description")] = None,
+    due_date: Annotated[datetime | None, typer.Option()] = None,
+    interval: Annotated[int | None, typer.Option(help="Interval for recurring task")] = None,
+    interval_unit: Annotated[str | None, typer.Option(help="Unit for interval (days, weeks, months, years)")] = None,
+    priority: Annotated[int | None, typer.Option()] = None
+) -> None:
+    try:
+        # Calculate due date if interval is provided
+        if interval is not None and interval_unit is not None:
+            if interval_unit == "days":
+                due_date = datetime.now() + timedelta(days=interval)
+            elif interval_unit == "weeks":
+                due_date = datetime.now() + timedelta(weeks=interval)
+            elif interval_unit == "months":
+                # Approximate months as 30 days
+                due_date = datetime.now() + timedelta(days=interval * 30)
+            elif interval_unit == "years":
+                # Approximate years as 365 days
+                due_date = datetime.now() + timedelta(days=interval * 365)
+            else:
+                raise ValueError(f"Invalid interval unit: {interval_unit}. Must be one of: days, weeks, months, years")
+
+        task = task_service.add_task(
+            name=name,
+            type=type,
+            description=description,
+            due_date=due_date,
+            priority=priority
+        )
+        print(json.dumps(task.model_dump(), indent=4, default=serialize))
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+@app.command(help="Get task information")
+def get(
+    name: Annotated[str, typer.Option(prompt="Task name")]
+) -> None:
+    task = task_service.get_task(name=name)
+    print(json.dumps(task.model_dump(), indent=4, default=serialize))
+
+@app.command(help="Update task information")
+def update(
+    name: Annotated[str, typer.Option(prompt="Task name")],
+    new_name: Annotated[str | None, typer.Option()] = None,
+    type: Annotated[TaskType | None, typer.Option()] = None,
+    description: Annotated[str | None, typer.Option()] = None,
+    due_date: Annotated[datetime | None, typer.Option()] = None,
+    priority: Annotated[int | None, typer.Option()] = None
+) -> None:
+    task = task_service.get_task(name=name)
+    args = {k: v for k, v in locals().items() if v is not None and k != 'name'}
+    result = task_service.update_task(task_id=task.id, **args)
+    print(json.dumps(result.model_dump(), indent=4, default=serialize))
+
+@app.command(help="Delete a task")
+def delete(
+    name: Annotated[str, typer.Option(prompt="Task name")]
+) -> None:
+    try:
+        task = task_service.get_task(name=name)
+        task_service.delete_task(task_id=task.id)
+        print(f'Task "{name}" deleted successfully')
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+@app.command(help="Mark a task as complete")
+def complete(
+    name: Annotated[str, typer.Option(prompt="Task name")]
+) -> None:
+    try:
+        task = task_service.get_task(name=name)
+        
+        # Mark current task as complete
+        result = task_service.update_task(
+            task_id=task.id,
+            complete=True,
+            completed_at=datetime.now()
+        )
+        print(f'Task "{name}" marked as complete')
+            
+    except Exception as e:
+        print(f"Error: {str(e)}")
+
+if __name__ == "__main__":
+    app() 

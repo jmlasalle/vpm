@@ -1,4 +1,4 @@
-from src.vpm.cli import app
+from vpm.cli import app
 
 if __name__ == "__main__":
     app()

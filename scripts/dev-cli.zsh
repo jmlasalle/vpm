@@ -2,4 +2,4 @@
 
 source .venv/bin/activate
 
-python3 -m src.vpm.cli
+python3 -m vpm.cli

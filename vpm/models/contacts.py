@@ -1,0 +1,16 @@
+from sqlmodel import Field
+from .base import BaseModel
+from typing import Optional
+
+class Contact(BaseModel, table=True):
+    """Model representing a contact."""
+    email: str = Field(unique=True)
+    phone: Optional[str] = Field(default=None)
+    company: Optional[str] = None
+    street: Optional[str] = None
+    postal_box: Optional[str] = None
+    town: Optional[str] = None
+    state_region: Optional[str] = None
+    postal_code: Optional[str] = None
+    country: Optional[str] = None
+    website: Optional[str] = None 
