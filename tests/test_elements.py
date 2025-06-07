@@ -15,8 +15,8 @@ def test_element_help():
 def test_element_add():
     """Test adding an element."""
     # First add a home and room
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
-    room_app.invoke(app, ["add", "--name", "Test Room"])
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(room_app, ["add", "--name", "Test Room"])
     
     # Then add an element
     result = runner.invoke(app, [
@@ -31,8 +31,8 @@ def test_element_add():
 def test_element_get():
     """Test getting element information."""
     # First add a home, room, and element
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
-    room_app.invoke(app, ["add", "--name", "Test Room"])
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(room_app, ["add", "--name", "Test Room"])
     runner.invoke(app, [
         "add",
         "--name", "Test Element",
@@ -49,8 +49,8 @@ def test_element_get():
 def test_element_update():
     """Test updating an element."""
     # First add a home, room, and element
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
-    room_app.invoke(app, ["add", "--name", "Test Room"])
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(room_app, ["add", "--name", "Test Room"])
     runner.invoke(app, [
         "add",
         "--name", "Test Element",
@@ -72,8 +72,8 @@ def test_element_update():
 def test_element_delete():
     """Test deleting an element."""
     # First add a home, room, and element
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
-    room_app.invoke(app, ["add", "--name", "Test Room"])
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(room_app, ["add", "--name", "Test Room"])
     runner.invoke(app, [
         "add",
         "--name", "Test Element",

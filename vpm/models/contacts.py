@@ -4,7 +4,7 @@ from typing import Optional
 
 class Contact(BaseModel, table=True):
     """Model representing a contact."""
-    email: str = Field(unique=True)
+    email: str = Field(unique=True, nullable=False)
     phone: Optional[str] = Field(default=None)
     company: Optional[str] = None
     street: Optional[str] = None

@@ -15,13 +15,10 @@ from .services.elements import ElementService, TaskService
 from .services.database import DatabaseService
 from .services.demo import DemoService
 from .models.property import Home, Room
-from .models.elements import Element, Task
+from .models.elements import Element
+from .models.tasks import Task
 from .models.parts import Part
 from .models.contacts import Contact
-from .models.documents import Document
-from .database import init_db, create_home_trigger, create_db_and_tables, engine
-from .models import *
-from .core import *
 import vpm.home
 import vpm.room
 import vpm.elements
@@ -101,9 +98,7 @@ def onboard():
         print(f'What element does {rname} have?')
         while add_more_equip.lower() == "y":
             ename = typer.prompt("what nickname do you want for the element")
-            etype = typer.prompt(f'What is {ename}\'s element type?')
-            edate = typer.prompt(f'What date was {ename} installed (YYYY-MM-DD)')
-            add_element(room_id=r.id, name=ename, equip_type=etype, install_date=datetime.strptime(edate, '%Y-%m-%d'))
+            add_element(room_id=r.id, name=ename)
             add_more_equip = typer.prompt(f'Are there more elements in {rname} to add (y/n)?')
         add_more_rooms = typer.prompt("Do you want to add another room(y/n)?")
 

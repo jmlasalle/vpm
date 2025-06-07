@@ -62,9 +62,6 @@ def sample_element(test_session, sample_room):
     element = Element(
         id=uuid.uuid4(),
         name="Test Element",
-        equip_type="test_equipment",
-        room_id=sample_room.id,
-        home_id=sample_room.home_id,
         install_date=datetime.now()
     )
     test_session.add(element)
@@ -78,7 +75,6 @@ def sample_task_type(test_session):
     task_type = TaskType(
         id=uuid.uuid4(),
         name="Test Task Type",
-        equip_type="test_equipment",
         frequency="monthly",
         interval=1,
         description="A test task type"

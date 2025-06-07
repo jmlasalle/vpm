@@ -43,27 +43,22 @@ class DemoService:
             # Create elements
             self.element_service.create(Element(
                 name="Fridge",
-                equip_type="refrigerator",
                 room_id=kitchen.id
             ))
             self.element_service.create(Element(
                 name="Stove",
-                equip_type="stove",
                 room_id=kitchen.id
             ))
             self.element_service.create(Element(
                 name="Dishwasher",
-                equip_type="dishwasher",
                 room_id=kitchen.id
             ))
             self.element_service.create(Element(
                 name="Water Heater",
-                equip_type="water heater - tank",
                 room_id=mechanical.id
             ))
             self.element_service.create(Element(
                 name="Heat Pump",
-                equip_type="heat pump - ducted",
                 room_id=mechanical.id
             ))
             logger.info(f"Created demo elements in {home.name}")

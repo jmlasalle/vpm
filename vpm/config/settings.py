@@ -1,13 +1,14 @@
 import os
 from pathlib import Path
 from typing import Optional
+import typer
 
 class Settings:
     """Configuration settings for the VPM application."""
     
     # Base paths
     BASE_DIR: Path = Path(__file__).parent.parent.parent
-    DATA_DIR: Path = BASE_DIR / "data"
+    APP_DIR: Path = Path(typer.get_app_dir("vpm"))
     
     # Database settings
     DATABASE_URL: str = os.getenv("VPM_DATABASE_URL", "sqlite:///vpm.db")
@@ -23,12 +24,12 @@ class Settings:
     @classmethod
     def get_database_path(cls) -> Path:
         """Get the database file path."""
-        return cls.DATA_DIR / "vpm.db"
+        return cls.APP_DIR / "vpm.db"
     
     @classmethod
     def ensure_data_directory(cls) -> None:
-        """Ensure the data directory exists."""
-        cls.DATA_DIR.mkdir(parents=True, exist_ok=True)
+        """Ensure the application directory exists."""
+        cls.APP_DIR.mkdir(parents=True, exist_ok=True)
 
 # Create a global settings instance
 settings = Settings() 

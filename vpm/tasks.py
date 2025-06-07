@@ -17,12 +17,14 @@ def serialize(obj):
         return obj.isoformat()
     if isinstance(obj, UUID):
         return str(obj)
+    if isinstance(obj, TaskType):
+        return obj.value
     raise TypeError(f"Type {type(obj)} not serializable")
 
 @app.command(help="Adds a new task to the local database.")
 def add(
     name: Annotated[str, typer.Option(prompt="Task name")],
-    type: Annotated[TaskType, typer.Option(prompt="Task type")] = "Maintenance",
+    type: Annotated[str, typer.Option(prompt="Task type", help="Type of task (MAINTENANCE, REPAIR, REPLACE, INSPECT)")] = "MAINTENANCE",
     description: Annotated[str, typer.Option(prompt="Description")] = None,
     due_date: Annotated[datetime | None, typer.Option()] = None,
     interval: Annotated[int | None, typer.Option(help="Interval for recurring task")] = None,
@@ -45,14 +47,17 @@ def add(
             else:
                 raise ValueError(f"Invalid interval unit: {interval_unit}. Must be one of: days, weeks, months, years")
 
+        task_type = TaskType(type.upper())
         task = task_service.add_task(
             name=name,
-            type=type,
+            type=task_type,
             description=description,
             due_date=due_date,
             priority=priority
         )
         print(json.dumps(task.model_dump(), indent=4, default=serialize))
+    except ValueError:
+        print(f"Error: Invalid task type. Must be one of: {', '.join(t.value for t in TaskType)}")
     except Exception as e:
         print(f"Error: {str(e)}")
 
@@ -67,15 +72,22 @@ def get(
 def update(
     name: Annotated[str, typer.Option(prompt="Task name")],
     new_name: Annotated[str | None, typer.Option()] = None,
-    type: Annotated[TaskType | None, typer.Option()] = None,
+    type: Annotated[str | None, typer.Option(help="Type of task (MAINTENANCE, REPAIR, REPLACE, INSPECT)")] = None,
     description: Annotated[str | None, typer.Option()] = None,
     due_date: Annotated[datetime | None, typer.Option()] = None,
     priority: Annotated[int | None, typer.Option()] = None
 ) -> None:
-    task = task_service.get_task(name=name)
-    args = {k: v for k, v in locals().items() if v is not None and k != 'name'}
-    result = task_service.update_task(task_id=task.id, **args)
-    print(json.dumps(result.model_dump(), indent=4, default=serialize))
+    try:
+        task = task_service.get_task(name=name)
+        args = {k: v for k, v in locals().items() if v is not None and k != 'name'}
+        if 'type' in args:
+            args['type'] = TaskType(args['type'].upper())
+        result = task_service.update_task(task_id=task.id, **args)
+        print(json.dumps(result.model_dump(), indent=4, default=serialize))
+    except ValueError:
+        print(f"Error: Invalid task type. Must be one of: {', '.join(t.value for t in TaskType)}")
+    except Exception as e:
+        print(f"Error: {str(e)}")
 
 @app.command(help="Delete a task")
 def delete(

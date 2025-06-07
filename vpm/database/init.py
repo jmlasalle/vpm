@@ -45,7 +45,7 @@ def init_db(overwrite: bool = False) -> str:
             f'Database already exists at {db_path}. To overwrite include `--overwrite`'
         )
     
-    # Ensure data directory exists
+    # Ensure app directory exists
     settings.ensure_data_directory()
     
     # Create tables

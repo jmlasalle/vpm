@@ -1,8 +1,9 @@
 import typer
 from typing_extensions import Annotated
 from rich import print
-from .database import create_db_and_tables, engine
 from .utils.logging import logger
+from .database.init import init_db
+from .database.config import engine
 
 app = typer.Typer(no_args_is_help=True)
 
@@ -10,7 +11,7 @@ app = typer.Typer(no_args_is_help=True)
 def create(overwrite: Annotated[bool, typer.Option("--overwrite", prompt="Overwrite existing DB?")] = False):
     """Initializes the database and creates all necessary tables."""
     try:
-        db_url = create_db_and_tables(db_path=sqlite_file_name, overwrite=overwrite)
+        db_url = init_db(overwrite=overwrite)
         print(db_url)
     except FileExistsError as e:
         print(e)

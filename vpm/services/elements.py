@@ -14,13 +14,6 @@ class ElementService(BaseService[Element]):
     def __init__(self):
         super().__init__(Element)
     
-    def get_by_type(self, equip_type: str) -> List[Element]:
-        """Get all elements of a specific type."""
-        with Session(engine) as session:
-            return session.exec(
-                select(Element).where(Element.equip_type == equip_type)
-            ).all()
-    
     def get_active_elements(self) -> List[Element]:
         """Get all active elements (not removed)."""
         with Session(engine) as session:

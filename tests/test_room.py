@@ -14,7 +14,7 @@ def test_room_help():
 def test_room_add():
     """Test adding a room."""
     # First add a home
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
     
     # Then add a room
     result = runner.invoke(app, ["add", "--name", "Test Room"])
@@ -24,7 +24,7 @@ def test_room_add():
 def test_room_get():
     """Test getting room information."""
     # First add a home and room
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
     runner.invoke(app, ["add", "--name", "Test Room"])
     
     # Then get it
@@ -35,7 +35,7 @@ def test_room_get():
 def test_room_update():
     """Test updating a room."""
     # First add a home and room
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
     runner.invoke(app, ["add", "--name", "Test Room"])
     
     # Then update it
@@ -46,7 +46,7 @@ def test_room_update():
 def test_room_delete():
     """Test deleting a room."""
     # First add a home and room
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
     runner.invoke(app, ["add", "--name", "Test Room"])
     
     # Then delete it

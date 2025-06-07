@@ -17,9 +17,9 @@ def test_task_help():
 def test_task_add():
     """Test adding a task."""
     # First add a home, room, and element
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
-    room_app.invoke(app, ["add", "--name", "Test Room"])
-    element_app.invoke(app, [
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(room_app, ["add", "--name", "Test Room"])
+    runner.invoke(element_app, [
         "add",
         "--name", "Test Element",
         "--type", "MAINTENANCE",
@@ -40,9 +40,9 @@ def test_task_add():
 def test_task_get():
     """Test getting task information."""
     # First add a home, room, element, and task
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
-    room_app.invoke(app, ["add", "--name", "Test Room"])
-    element_app.invoke(app, [
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(room_app, ["add", "--name", "Test Room"])
+    runner.invoke(element_app, [
         "add",
         "--name", "Test Element",
         "--type", "MAINTENANCE",
@@ -65,9 +65,9 @@ def test_task_get():
 def test_task_update():
     """Test updating a task."""
     # First add a home, room, element, and task
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
-    room_app.invoke(app, ["add", "--name", "Test Room"])
-    element_app.invoke(app, [
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(room_app, ["add", "--name", "Test Room"])
+    runner.invoke(element_app, [
         "add",
         "--name", "Test Element",
         "--type", "MAINTENANCE",
@@ -95,9 +95,9 @@ def test_task_update():
 def test_task_complete():
     """Test completing a task."""
     # First add a home, room, element, and task
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
-    room_app.invoke(app, ["add", "--name", "Test Room"])
-    element_app.invoke(app, [
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(room_app, ["add", "--name", "Test Room"])
+    runner.invoke(element_app, [
         "add",
         "--name", "Test Element",
         "--type", "MAINTENANCE",
@@ -119,9 +119,9 @@ def test_task_complete():
 def test_task_delete():
     """Test deleting a task."""
     # First add a home, room, element, and task
-    home_app.invoke(app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
-    room_app.invoke(app, ["add", "--name", "Test Room"])
-    element_app.invoke(app, [
+    runner.invoke(home_app, ["add", "--name", "Test Home", "--address", "123 Test St", "--description", "Test Description"])
+    runner.invoke(room_app, ["add", "--name", "Test Room"])
+    runner.invoke(element_app, [
         "add",
         "--name", "Test Element",
         "--type", "MAINTENANCE",

@@ -78,13 +78,11 @@ def test_create_element(element_service, room_service, home_service):
     # Then create an element
     element = Element(
         name="Test Element",
-        equip_type="test",
         room_id=room.id
     )
     created = element_service.create(element)
     assert created.id is not None
     assert created.name == "Test Element"
-    assert created.equip_type == "test"
     assert created.room_id == room.id
 
 def test_create_task(task_service, element_service, room_service, home_service):
@@ -101,7 +99,6 @@ def test_create_task(task_service, element_service, room_service, home_service):
     ))
     element = element_service.create(Element(
         name="Test Element",
-        equip_type="test",
         room_id=room.id
     ))
     

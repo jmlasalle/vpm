@@ -4,5 +4,5 @@ from typing import Optional
 
 class Document(BaseModel, table=True):
     """Model representing a document."""
-    doc_type: Optional[str] = None
-    file_name: Optional[str] = Field(default=None) 
+    doc_type: Optional[str] = Field(default=None, nullable=True)
+    file_name: Optional[str] = Field(default=None, nullable=True) 

@@ -34,13 +34,11 @@ def test_element_model(sample_room):
     element = Element(
         id=uuid.uuid4(),
         name="Test Element",
-        equip_type="test_equipment",
         room_id=sample_room.id,
         home_id=sample_room.home_id,
         install_date=datetime.now()
     )
     assert element.name == "Test Element"
-    assert element.equip_type == "test_equipment"
     assert element.room_id == sample_room.id
     assert element.home_id == sample_room.home_id
     assert isinstance(element.install_date, datetime)
@@ -51,13 +49,11 @@ def test_task_type_model():
     task_type = TaskType(
         id=uuid.uuid4(),
         name="Test Task Type",
-        equip_type="test_equipment",
         frequency="monthly",
         interval=1,
         description="A test task type"
     )
     assert task_type.name == "Test Task Type"
-    assert task_type.equip_type == "test_equipment"
     assert task_type.frequency == "monthly"
     assert task_type.interval == 1
     assert task_type.description == "A test task type"
