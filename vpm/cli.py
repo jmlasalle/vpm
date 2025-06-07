@@ -10,6 +10,7 @@ from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY
 from pathlib import Path
 from typing import Optional
 from uuid import UUID
+from .database.config import engine
 from .services.property import HomeService, RoomService
 from .services.elements import ElementService, TaskService
 from .services.database import DatabaseService
@@ -70,37 +71,6 @@ def config():
 def version():
     """Prints the application's version number."""
     print(f'Version {VERSION}')
-
-@app.command()
-def dashboard(home_id: uuid.UUID):
-    """Display a dashboard view of a home and its rooms"""
-    with Session(engine) as session:
-        results = session.exec(select(Home).where(Home.id == uuid.UUID(home_id))).one()
-        rooms = [r for r in h.rooms]
-        print(h)
-        print(rooms)
-
-@app.command()
-def onboard():
-    """Interactive onboarding process to set up your first home"""
-    print("Welcome to vpm!")
-    #create home
-    print("Lets start by setting up your home.")
-    hname = typer.prompt("What name do you want to call your home?")
-    haddress = typer.prompt(f'What is the street address for {hname}?')
-    h = add_home(hname, haddress)
-    print(f'Now lets add your first room.')
-    add_more_rooms = "y"
-    while add_more_rooms.lower() == "y":
-        rname = typer.prompt("Room name")
-        r = add_room(home_id=h.id, name=rname)
-        add_more_equip = "y"
-        print(f'What element does {rname} have?')
-        while add_more_equip.lower() == "y":
-            ename = typer.prompt("what nickname do you want for the element")
-            add_element(room_id=r.id, name=ename)
-            add_more_equip = typer.prompt(f'Are there more elements in {rname} to add (y/n)?')
-        add_more_rooms = typer.prompt("Do you want to add another room(y/n)?")
 
 if __name__ == "__main__":
     app()
