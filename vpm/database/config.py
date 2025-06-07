@@ -1,6 +1,6 @@
 from sqlmodel import create_engine
 from pathlib import Path
-from ..config import settings
+from ..config.settings import settings
 
 # Create database engine
 engine = create_engine(

@@ -4,4 +4,4 @@ source .venv/bin/activate
 
 python3 -m build
 
-pipx install . -v
+pipx install . -v --force
