@@ -1,17 +1,21 @@
 from sqlmodel import Field, Relationship
 from .base import BaseModel
-from typing import List, Optional
+from typing import List, Optional, TYPE_CHECKING
 from decimal import Decimal
 from datetime import datetime
 import uuid
-from .elements import Element
-from .parts import Part
+
+if TYPE_CHECKING:
+    from .elements import Element
+    from .parts import Part
+    from .documents import Document
 
 class TaskType(BaseModel):
     """Base type for maintenance tasks."""
     interval: int | None = None
     interval_unit: str | None = None
     link: Optional[str] = Field(default=None, nullable=True)
+    documents: Optional[List["Document"]] = Relationship(back_populates="task", cascade_delete=True)
 
 class Task(TaskType, table=True):
     """Model representing a maintenance task."""
@@ -23,4 +27,4 @@ class Task(TaskType, table=True):
     cost_parts: Optional[Decimal] = Field(default=None, nullable=True) 
     cost_labor: Optional[Decimal] = Field(default=None, nullable=True)
     # Optional relationship to Parts (no cascade delete since Parts belong to Elements)
-    parts: Optional[List[Part]] = Relationship(back_populates="task", default=None, nullable=True) 
+    parts: Optional[List[Part]] = Relationship(back_populates="task") 
