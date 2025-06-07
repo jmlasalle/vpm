@@ -2,8 +2,9 @@ from typing import Optional
 import typer
 from uuid import UUID
 from .services.elements import TaskService
-from .models.elements import Task, TaskType
+from .models.tasks import Task, TaskType
 from .utils.logging import logger
+from .utils.helpers import serialize
 from typing_extensions import Annotated
 from rich import print
 import json
@@ -11,15 +12,6 @@ from datetime import datetime, timedelta
 
 app = typer.Typer(no_args_is_help=True)
 task_service = TaskService()
-
-def serialize(obj):
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    if isinstance(obj, UUID):
-        return str(obj)
-    if isinstance(obj, TaskType):
-        return obj.value
-    raise TypeError(f"Type {type(obj)} not serializable")
 
 @app.command(help="Adds a new task to the local database.")
 def add(

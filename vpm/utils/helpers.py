@@ -21,6 +21,17 @@ def parse_decimal(value: str) -> Optional[Decimal]:
     except (ValueError, TypeError):
         return None
 
+def serialize(obj):
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if isinstance(obj, UUID):
+        return str(obj)
+    if isinstance(obj, TaskType):
+        return obj.value
+    if isinstance(obj, ElementType):
+        return obj.value
+    raise TypeError(f"Type {type(obj)} not serializable")
+
 def to_dict(obj: Any) -> Dict:
     """Convert object to dictionary, handling special types."""
     def _serialize(obj: Any) -> Any:

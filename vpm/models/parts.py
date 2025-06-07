@@ -1,35 +1,31 @@
 from sqlmodel import Field, Relationship
 from .base import BaseModel
-from typing import Optional, List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from decimal import Decimal
 from datetime import datetime
-import uuid
+from uuid import UUID
 
 
 if TYPE_CHECKING:
     from .tasks import Task
-    from .elements import Element, ElementType
-    from .documents import Document
+    from .elements import Element
 
 class PartType(BaseModel):
     """Base type for parts."""
-    brand: Optional[str] = None
-    model: Optional[str] = None
-    model_number: Optional[str] = None
-    cost: Optional[Decimal] = None
-    currency: Optional[str] = None
-    element_type_id: Optional[uuid.UUID] = Field(foreign_key="elementtype.id", default=None, nullable=True)
-    element_type: Optional["ElementType"] = Relationship(back_populates="part_types")
-    documents: Optional[List["Document"]] = Relationship(back_populates="part", cascade_delete=True)
+    brand: str|None = Field(default=None, nullable=True)
+    model: str | None = Field(default=None)
+    model_number: str | None = Field(default=None)
+    cost: Decimal | None = Field(default=None)
+    currency: str | None = Field(default=None)
 
 class Part(PartType, table=True):
     """Model representing a part."""
-    serial_num: Optional[str] = None
-    install_date: Optional[datetime] = None
-    remove_date: Optional[datetime] = None
+    serial_num: str | None = Field(default=None)
+    install_date: datetime | None = Field(default=None)
+    remove_date: datetime | None = Field(default=None)
     # Primary relationship to Element
-    element_id: uuid.UUID = Field(foreign_key="element.id", nullable=False)
+    element_id: UUID = Field(foreign_key="element.id", nullable=False)
     element: "Element" = Relationship(back_populates="parts")
     # Optional relationship to Task
-    task_id: Optional[uuid.UUID] = Field(foreign_key="task.id", nullable=True)
-    task: Optional["Task"] = Relationship(back_populates="parts")
+    task_id: UUID | None = Field(foreign_key="task.id", nullable=True)
+    task: "Task" = Relationship(back_populates="parts")

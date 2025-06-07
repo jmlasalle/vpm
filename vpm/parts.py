@@ -2,27 +2,20 @@ from typing import Optional
 import typer
 from uuid import UUID
 from .services.parts import PartService
-from .models.parts import Part, PartType
+from .models.parts import Part
 from .utils.logging import logger
 from typing_extensions import Annotated
 from rich import print
 import json
 from datetime import datetime
+from .utils.helpers import serialize
 
 app = typer.Typer(no_args_is_help=True)
 part_service = PartService()
 
-def serialize(obj):
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    if isinstance(obj, UUID):
-        return str(obj)
-    raise TypeError(f"Type {type(obj)} not serializable")
-
 @app.command(help="Adds a new part to the local database.")
 def add(
     name: Annotated[str, typer.Option(prompt="Part name")],
-    type: Annotated[PartType, typer.Option(prompt="Part type")],
     description: Annotated[str, typer.Option(prompt="Description")],
     manufacturer: Annotated[str | None, typer.Option()] = None,
     model_number: Annotated[str | None, typer.Option()] = None,
@@ -31,7 +24,6 @@ def add(
     try:
         part = part_service.add_part(
             name=name,
-            type=type,
             description=description,
             manufacturer=manufacturer,
             model_number=model_number,
@@ -52,7 +44,6 @@ def get(
 def update(
     name: Annotated[str, typer.Option(prompt="Part name")],
     new_name: Annotated[str | None, typer.Option()] = None,
-    type: Annotated[PartType | None, typer.Option()] = None,
     description: Annotated[str | None, typer.Option()] = None,
     manufacturer: Annotated[str | None, typer.Option()] = None,
     model_number: Annotated[str | None, typer.Option()] = None,

@@ -1,7 +1,7 @@
 from sqlmodel import Field, Relationship
 from .base import BaseModel
-from typing import List, Optional, TYPE_CHECKING
-import uuid
+from typing import TYPE_CHECKING
+from uuid import UUID
 
 if TYPE_CHECKING:
     from .elements import Element
@@ -10,13 +10,13 @@ if TYPE_CHECKING:
 class Home(BaseModel, table=True):
     """Model representing a home property."""
     address: str
-    rooms: Optional[List["Room"]] = Relationship(back_populates="home", cascade_delete=True)
-    documents: Optional[List["Document"]] = Relationship(back_populates="home", cascade_delete=True)
+    rooms: list["Room"] = Relationship(back_populates="home", cascade_delete=True)
+    documents: list["Document"] = Relationship(back_populates="home", cascade_delete=True)
 
 class Room(BaseModel, table=True):
     """Model representing a room in a home."""
     level: int = Field(default=0)
-    home_id: uuid.UUID = Field(foreign_key="home.id")
+    home_id: UUID = Field(foreign_key="home.id")
     home: Home = Relationship(back_populates="rooms")
-    elements: List["Element"] = Relationship(back_populates="room", cascade_delete=True)
-    documents: Optional[List["Document"]] = Relationship(back_populates="room", cascade_delete=True)
+    elements: list["Element"] = Relationship(back_populates="room", cascade_delete=True)
+    

@@ -3,7 +3,8 @@ from uuid import UUID
 from datetime import datetime
 from sqlmodel import Session, select
 from ..database import engine
-from ..models.elements import Element, Task
+from ..models.elements import Element
+from ..models.tasks import Task
 from .base import BaseService
 from ..utils.logging import logger
 from ..utils.helpers import utc_now

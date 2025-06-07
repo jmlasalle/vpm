@@ -1,6 +1,6 @@
 from sqlmodel import Field, Relationship
 from .base import BaseModel
-from typing import Optional, List
+from typing import Optional
 from .documents import Document
 
 class Contact(BaseModel, table=True):
@@ -15,4 +15,4 @@ class Contact(BaseModel, table=True):
     postal_code: Optional[str] = None
     country: Optional[str] = None
     website: Optional[str] = None
-    documents: Optional[List[Document]] = Relationship(back_populates="contact", cascade_delete=True)
+    documents: Optional[Document] = Relationship(back_populates="contact", cascade_delete=True)

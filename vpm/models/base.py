@@ -1,10 +1,10 @@
 from sqlmodel import Field, SQLModel
-import uuid
+from uuid import UUID, uuid4
 from datetime import datetime, timezone
 
 class BaseModel(SQLModel):
     """Base model with common fields for all models."""
-    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str = Field(unique=True, nullable=False)
     description: str = Field(default=None, nullable=True)
     created_at: datetime = Field(default=datetime.now(timezone.utc), nullable=False)
