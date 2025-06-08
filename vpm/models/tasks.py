@@ -5,7 +5,8 @@ from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
 from pydantic import field_validator
-from ..utils.helpers import validate_task_category, validate_interval_unit, validate_currency, validate_url
+from ..utils.helpers import validate_url
+from .picklist import TaskCategory, IntervalUnit, Currency
 
 if TYPE_CHECKING:
     from .elements import Element
@@ -20,11 +21,15 @@ class TaskType(BaseModel):
 
     @field_validator("task_category")
     def validate_task_category(cls, v):
-        return validate_task_category(v)
+        if v not in TaskCategory:
+            raise ValueError(f"Invalid task category: {v}")
+        return v
 
     @field_validator("interval_unit")
     def validate_interval_unit(cls, v):
-        return validate_interval_unit(v)
+        if v not in IntervalUnit:
+            raise ValueError(f"Invalid interval unit: {v}")
+        return v
     
     @field_validator("url")
     def validate_url(cls, v):
@@ -45,4 +50,6 @@ class Task(TaskType, table=True):
 
     @field_validator("currency")
     def validate_currency(cls, v):
-        return validate_currency(v)
+        if v not in Currency:
+            raise ValueError(f"Invalid currency: {v}")
+        return v

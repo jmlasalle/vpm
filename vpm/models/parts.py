@@ -5,7 +5,7 @@ from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
 from pydantic import field_validator
-from ..utils.helpers import validate_currency
+from .picklist import Currency
 
 if TYPE_CHECKING:
     from .tasks import Task
@@ -21,7 +21,9 @@ class PartType(BaseModel):
 
     @field_validator("currency")
     def validate_currency(cls, v):
-        return validate_currency(v)
+        if v not in Currency:
+            raise ValueError(f"Invalid currency: {v}")
+        return v
 
 class Part(PartType, table=True):
     """Model representing a part."""

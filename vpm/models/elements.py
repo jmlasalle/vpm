@@ -46,7 +46,7 @@ class Element(ElementType, table=True):
     remove_date: datetime | None = Field(default=None, nullable=True)
     room_id: UUID = Field(foreign_key="room.id")
     room: "Room" = Relationship(back_populates="elements")
-    tasks: list["Task"] = Relationship(back_populates="elements", cascade_delete=True)
-    parts: list["Part"] = Relationship(back_populates="elements", cascade_delete=True)
-    documents: list["Document"] = Relationship(back_populates="elements", cascade_delete=True)
+    tasks: list["Task"] = Relationship(back_populates="element", cascade_delete=True)
+    parts: list["Part"] = Relationship(back_populates="element", cascade_delete=True)
+    documents: list["Document"] = Relationship(back_populates="element", cascade_delete=True)
  
