@@ -3,7 +3,6 @@ from uuid import UUID
 from sqlmodel import Session, select
 from ..database import engine
 from ..models.base import BaseModel
-from ..utils.logging import logger
 
 T = TypeVar('T', bound=BaseModel)
 
@@ -19,7 +18,6 @@ class BaseService(Generic[T]):
             session.add(item)
             session.commit()
             session.refresh(item)
-            logger.info(f"Created {self.model_class.__name__}: {item.name}")
             return item
     
     def get_by_id(self, item_id: UUID) -> Optional[T]:
@@ -51,7 +49,6 @@ class BaseService(Generic[T]):
                 session.add(item)
                 session.commit()
                 session.refresh(item)
-                logger.info(f"Updated {self.model_class.__name__}: {item.name}")
             return item
     
     def delete(self, item_id: UUID) -> bool:
@@ -61,6 +58,5 @@ class BaseService(Generic[T]):
             if item:
                 session.delete(item)
                 session.commit()
-                logger.info(f"Deleted {self.model_class.__name__}: {item.name}")
                 return True
             return False 

@@ -4,7 +4,6 @@ import os
 from pathlib import Path
 from .config import engine
 from ..config import settings
-from ..utils.logging import logger
 
 def create_home_trigger():
     """Create trigger to ensure only one row exists in the home table."""
@@ -20,9 +19,7 @@ def create_home_trigger():
         with engine.connect() as connection:
             connection.execute(text(trigger_sql))
             connection.commit()
-            logger.info("Created home table trigger")
     except Exception as e:
-        logger.error(f"Error creating home trigger: {e}")
         raise
 
 def init_db(overwrite: bool = False) -> str:
@@ -38,7 +35,6 @@ def init_db(overwrite: bool = False) -> str:
     
     if db_path.exists() and overwrite:
         db_path.unlink()
-        logger.info(f"Removed existing database at {db_path}")
     
     if db_path.exists() and not overwrite:
         raise FileExistsError(
@@ -50,7 +46,6 @@ def init_db(overwrite: bool = False) -> str:
     
     # Create tables
     SQLModel.metadata.create_all(engine)
-    logger.info("Created database tables")
     
     # Create triggers
     create_home_trigger()

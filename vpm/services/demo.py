@@ -2,7 +2,6 @@ from .property import HomeService, RoomService
 from .elements import ElementService
 from ..models.property import Home, Room
 from ..models.elements import Element
-from ..utils.logging import logger
 
 class DemoService:
     """Service for creating demo data."""
@@ -20,7 +19,6 @@ class DemoService:
                 name="Demo Home",
                 address="145 Testing Way"
             ))
-            logger.info(f"Created demo home: {home.name}")
             
             # Create rooms
             kitchen = self.room_service.create(Room(
@@ -38,7 +36,6 @@ class DemoService:
                 level=1,
                 home_id=home.id
             ))
-            logger.info(f"Created demo rooms in {home.name}")
             
             # Create elements
             self.element_service.create(Element(
@@ -61,10 +58,8 @@ class DemoService:
                 name="Heat Pump",
                 room_id=mechanical.id
             ))
-            logger.info(f"Created demo elements in {home.name}")
             
             return home
             
         except Exception as e:
-            logger.error(f"Error creating demo home: {e}")
             raise 

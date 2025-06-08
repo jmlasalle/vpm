@@ -2,7 +2,6 @@ from typing import Optional
 from sqlmodel import Session, select
 from ..models.parts import Part, PartType
 from ..database.config import engine
-from ..utils.logging import logger
 
 class PartService:
     """Service for managing parts in the database."""
@@ -54,7 +53,6 @@ class PartService:
             session.add(part)
             session.commit()
             session.refresh(part)
-            logger.info(f"Added new part: {name}")
             return part
     
     def get_part(self, name: str) -> Part:
@@ -106,7 +104,6 @@ class PartService:
             session.add(part)
             session.commit()
             session.refresh(part)
-            logger.info(f"Updated part: {part.name}")
             return part
     
     def delete_part(self, part_id: str) -> None:
@@ -125,5 +122,4 @@ class PartService:
                 raise ValueError(f"No part found with ID '{part_id}'")
             
             session.delete(part)
-            session.commit()
-            logger.info(f"Deleted part: {part.name}") 
+            session.commit() 
