@@ -11,7 +11,7 @@ class Settings:
     APP_DIR: Path = Path(typer.get_app_dir("vpm"))
     
     # Database settings
-    DATABASE_URL: str = os.getenv("VPM_DATABASE_URL", "sqlite:///vpm.db")
+    DATABASE_URL: str = os.getenv("VPM_DATABASE_URL", f"sqlite:///{APP_DIR}/vpm.db")
     
     # Application settings
     DEBUG: bool = os.getenv("VPM_DEBUG", "False").lower() == "true"

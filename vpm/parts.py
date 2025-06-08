@@ -21,13 +21,14 @@ def add(
     serial_number: Annotated[str | None, typer.Option()] = None
 ) -> None:
     try:
-        part = part_service.add_part(
+        new_part = Part(
             name=name,
             description=description,
             manufacturer=manufacturer,
             model_number=model_number,
             serial_number=serial_number
         )
+        part = part_service.create(new_part)
         print(json.dumps(part.model_dump(), indent=4, default=serialize))
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -36,7 +37,7 @@ def add(
 def get(
     name: Annotated[str, typer.Option(prompt="Part name")]
 ) -> None:
-    part = part_service.get_part(name=name)
+    part = part_service.get_by_name(name=name)
     print(json.dumps(part.model_dump(), indent=4, default=serialize))
 
 @app.command(help="Update part information")
@@ -48,9 +49,9 @@ def update(
     model_number: Annotated[str | None, typer.Option()] = None,
     serial_number: Annotated[str | None, typer.Option()] = None
 ) -> None:
-    part = part_service.get_part(name=name)
+    part = part_service.get_by_name(name=name)
     args = {k: v for k, v in locals().items() if v is not None and k != 'name'}
-    result = part_service.update_part(part_id=part.id, **args)
+    result = part_service.update(item_id=part.id, **args)
     print(json.dumps(result.model_dump(), indent=4, default=serialize))
 
 @app.command(help="Delete a part")
@@ -58,8 +59,8 @@ def delete(
     name: Annotated[str, typer.Option(prompt="Part name")]
 ) -> None:
     try:
-        part = part_service.get_part(name=name)
-        part_service.delete_part(part_id=part.id)
+        part = part_service.get_by_name(name=name)
+        part_service.delete(item_id=part.id)
         print(f'Part "{name}" deleted successfully')
     except Exception as e:
         print(f"Error: {str(e)}")

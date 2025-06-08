@@ -7,6 +7,9 @@ from ..config import settings
 
 def create_home_trigger():
     """Create trigger to ensure only one row exists in the home table."""
+    # First drop the trigger if it exists
+    drop_trigger_sql = "DROP TRIGGER IF EXISTS single_row_check;"
+    
     trigger_sql = """
     CREATE TRIGGER single_row_check
         BEFORE INSERT ON home
@@ -17,24 +20,23 @@ def create_home_trigger():
     """
     try:
         with engine.connect() as connection:
+            # Drop existing trigger
+            connection.execute(text(drop_trigger_sql))
+            # Create new trigger
             connection.execute(text(trigger_sql))
             connection.commit()
     except Exception as e:
         raise
 
 def init_db(overwrite: bool = False) -> str:
-    """Initialize the database and create all tables.
-    
-    Args:
-        overwrite: Whether to overwrite existing database
-        
-    Returns:
-        Database URL
-    """
+    """Initialize the database and create all tables."""
     db_path = settings.get_database_path()
     
     if db_path.exists() and overwrite:
-        db_path.unlink()
+        try:
+            os.remove(db_path)
+        except Exception as e:
+            raise e
     
     if db_path.exists() and not overwrite:
         raise FileExistsError(
