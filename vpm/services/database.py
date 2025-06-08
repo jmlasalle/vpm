@@ -1,6 +1,5 @@
 from sqlalchemy import inspect
 from ..database import engine
-from ..utils.logging import logger
 
 class DatabaseService:
     """Service for database utility operations."""

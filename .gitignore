@@ -160,5 +160,5 @@ cython_debug/
 #.idea/
 
 # Databases
-/data/*.db
+vpm.db
 .DS_Store

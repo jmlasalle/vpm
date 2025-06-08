@@ -14,7 +14,6 @@ from .database.config import engine
 from .services.property import HomeService, RoomService
 from .services.elements import ElementService, TaskService
 from .services.database import DatabaseService
-from .services.demo import DemoService
 from .models.property import Home, Room
 from .models.elements import Element
 from .models.tasks import Task
@@ -47,7 +46,6 @@ room_service = RoomService()
 element_service = ElementService()
 task_service = TaskService()
 database_service = DatabaseService()
-demo_service = DemoService()
 
 # init commands
 @app.callback(invoke_without_command=True)

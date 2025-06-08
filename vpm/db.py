@@ -1,7 +1,6 @@
 import typer
 from typing_extensions import Annotated
 from rich import print
-from .utils.logging import logger
 from .database.init import init_db
 from .database.config import engine
 
