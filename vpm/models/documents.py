@@ -3,7 +3,7 @@ from .base import BaseModel
 from typing import Optional, TYPE_CHECKING
 import uuid
 from pydantic import field_validator
-from ..utils.helpers import validate_document_category
+from ..utils.helpers import validate_document_category, validate_url
 
 if TYPE_CHECKING:
     from .property import Home, Room
@@ -29,3 +29,7 @@ class Document(BaseModel, table=True):
     @field_validator("document_category")
     def validate_document_category(cls, v):
         return validate_document_category(v)
+    
+    @field_validator("url")
+    def validate_url(cls, v):
+        return validate_url(v)

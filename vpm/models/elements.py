@@ -5,7 +5,7 @@ from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
 from pydantic import field_validator
-from ..utils.helpers import validate_currency
+from ..utils.helpers import validate_currency, validate_url
 
 
 if TYPE_CHECKING:
@@ -27,6 +27,14 @@ class ElementType(BaseModel):
     @field_validator("currency")
     def validate_currency(cls, v):
         return validate_currency(v)
+    
+    @field_validator("manual_url")
+    def validate_manual_url(cls, v):
+        return validate_url(v)
+    
+    @field_validator("manufacture_url")
+    def validate_manufacture_url(cls, v):
+        return validate_url(v)
 
 class Element(ElementType, table=True):
     """Model representing an equipment element."""

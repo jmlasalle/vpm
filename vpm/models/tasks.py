@@ -5,7 +5,7 @@ from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
 from pydantic import field_validator
-from ..utils.helpers import validate_task_category, validate_interval_unit, validate_currency
+from ..utils.helpers import validate_task_category, validate_interval_unit, validate_currency, validate_url
 
 if TYPE_CHECKING:
     from .elements import Element
@@ -16,7 +16,7 @@ class TaskType(BaseModel):
     task_category: str | None = Field(default=None, nullable=True)
     interval: int | None = None
     interval_unit: str | None = None
-    link: str | None= Field(default=None, nullable=True)
+    url: str | None= Field(default=None, nullable=True)
 
     @field_validator("task_category")
     def validate_task_category(cls, v):
@@ -25,6 +25,10 @@ class TaskType(BaseModel):
     @field_validator("interval_unit")
     def validate_interval_unit(cls, v):
         return validate_interval_unit(v)
+    
+    @field_validator("url")
+    def validate_url(cls, v):
+        return validate_url(v)
 
 class Task(TaskType, table=True):
     """Model representing a maintenance task."""

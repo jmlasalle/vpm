@@ -3,8 +3,10 @@ from typing import Any, Dict, Optional
 from decimal import Decimal
 import json
 from uuid import UUID
+from email_validator import validate_email, EmailNotValidError
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY
 from ..models.picklist import *
+import re
 
 def utc_now() -> datetime:
     """Get current UTC datetime."""
@@ -58,6 +60,10 @@ def next_date(freq: str, interval: int, dt: datetime = None) -> datetime:
     return rrule(freq=eval(freq.upper()), interval=interval, dtstart=dt)[1] 
 
 # validator functions
+def validate_str(value: str) -> str:
+    """Validate string."""
+    return value.strip()
+
 def validate_document_category(value: str) -> str:
     """Validate document category."""
     if value not in DocumentCategory:
@@ -87,3 +93,30 @@ def validate_interval_unit(value: str) -> str:
     if value not in IntervalUnit:
         raise ValueError(f"Invalid interval unit: {value}")
     return value
+
+def validate_email(value: str) -> str:
+    """Validate email."""
+    try:
+        validate_email(value)
+        return value
+    except EmailNotValidError as e:
+        raise ValueError(f"Invalid email: {e}")
+    
+def validate_phone(value: str) -> str:
+    """Validate phone."""
+    value = re.sub(r'[^+\d]', '', value)
+    if not value:
+        raise ValueError("Phone is required")
+    if not re.match(r"^\+?[\d]{4,19}$", value):
+        raise ValueError("Invalid phone number")
+    return value
+
+def validate_url(value: str) -> str:
+    """Validate URL."""
+    if not value:
+        raise ValueError("URL is required")
+    if not value.startswith(('http://', 'https://')):
+        value = f"https://{value}"
+    if not re.match(r"^https?://[^\s/$.?#].[^\s]*$", value):
+        raise ValueError("Invalid URL")
+    return value    
