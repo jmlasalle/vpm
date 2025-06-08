@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 class TaskType(BaseModel):
     """Base type for maintenance tasks."""
-    task_category: str | None = Field(default=None, nullable=True)
+    task_category: str | None = Field(default=TaskCategory.MAINTENANCE, nullable=True)
     interval: int | None = None
     interval_unit: str | None = None
     url: str | None= Field(default=None, nullable=True)
