@@ -38,14 +38,13 @@ def add(
             else:
                 raise ValueError(f"Invalid interval unit: {interval_unit}. Must be one of: days, weeks, months, years")
 
-        task_type = TaskType(type.upper())
-        task = task_service.add_task(
+        new_task = Task(
             name=name,
-            type=task_type,
             description=description,
             due_date=due_date,
             priority=priority
         )
+        task = task_service.create(new_task)
         print(json.dumps(task.model_dump(), indent=4, default=serialize))
     except ValueError:
         print(f"Error: Invalid task type. Must be one of: {', '.join(t.value for t in TaskType)}")
@@ -56,7 +55,7 @@ def add(
 def get(
     name: Annotated[str, typer.Option(prompt="Task name")]
 ) -> None:
-    task = task_service.get_task(name=name)
+    task = task_service.get_by_name(name=name)
     print(json.dumps(task.model_dump(), indent=4, default=serialize))
 
 @app.command(help="Update task information")
@@ -69,11 +68,11 @@ def update(
     priority: Annotated[int | None, typer.Option()] = None
 ) -> None:
     try:
-        task = task_service.get_task(name=name)
+        task = task_service.get_by_name(name=name)
         args = {k: v for k, v in locals().items() if v is not None and k != 'name'}
         if 'type' in args:
             args['type'] = TaskType(args['type'].upper())
-        result = task_service.update_task(task_id=task.id, **args)
+        result = task_service.update(item_id=task.id, **args)
         print(json.dumps(result.model_dump(), indent=4, default=serialize))
     except ValueError:
         print(f"Error: Invalid task type. Must be one of: {', '.join(t.value for t in TaskType)}")
@@ -85,8 +84,8 @@ def delete(
     name: Annotated[str, typer.Option(prompt="Task name")]
 ) -> None:
     try:
-        task = task_service.get_task(name=name)
-        task_service.delete_task(task_id=task.id)
+        task = task_service.get_by_name(name=name)
+        task_service.delete(item_id=task.id)
         print(f'Task "{name}" deleted successfully')
     except Exception as e:
         print(f"Error: {str(e)}")
@@ -96,11 +95,11 @@ def complete(
     name: Annotated[str, typer.Option(prompt="Task name")]
 ) -> None:
     try:
-        task = task_service.get_task(name=name)
+        task = task_service.get_by_name(name=name)
         
         # Mark current task as complete
-        result = task_service.update_task(
-            task_id=task.id,
+        result = task_service.update(
+            item_id=task.id,
             complete=True,
             completed_at=datetime.now()
         )

@@ -2,7 +2,8 @@ import typer
 from typing import Optional
 from typing_extensions import Annotated
 from uuid import UUID
-from .services.property import RoomService
+from rich import print
+from .services.property import RoomService, HomeService
 from .services.elements import ElementService
 from .models.property import Room
 from .models.elements import Element
@@ -10,36 +11,50 @@ from .models.elements import Element
 app = typer.Typer(no_args_is_help=True)
 room_service = RoomService()
 element_service = ElementService()
+home_service = HomeService()
 
 @app.command()
 def add(
-    name: Annotated[str, typer.Option(prompt="Room name")]
+    name: Annotated[str, typer.Option(prompt="Room name")],
+    level: Annotated[int, typer.Option(prompt="Level")] = 0,
+    description: Annotated[str, typer.Option(prompt="Description")] = ""
     ):
-    room = add_room(name=name)
+    try:
+        home_id = home_service.get().id
+        new_room = Room(name=name, home_id=home_id, level=level, description=description)
+        room = room_service.create(new_room)
+    except Exception as e:
+        print(e)
     print(room)
 
 @app.command()
-def get(
+def all() -> None:
+    room = room_service.get_all()
+    print(room)
+
+@app.command()
+def get_by_name(
     name: Annotated[str, typer.Option(prompt="Name")]
     ) -> None:
-    room = get_item(table="room", name=name)
+    room = room_service.get_by_name(name=name)
     print(room)
 
 @app.command()
-def update_room(
+def update(
     name: Annotated[str, typer.Option(prompt="Room Name")] = None
     ):
-    args = {k: v for k, v in locals().items() if v is not None}
-    r = update_item(
-        table="Room", 
-        id=element_id,
+    room_id = room_service.get_by_name(name=name).id
+    args = {k: v for k, v in locals().items() if v is not None and k != 'room_id'}
+    r = room_service.update(
+        item_id=room_id,
         **args
         )
     print(r)
 
 @app.command()
-def delete_room(name: Annotated[str, typer.Option(prompt="Room name")]) -> None:
-    delete_item(table="Room", name=name)
+def delete(name: Annotated[str, typer.Option(prompt="Room name")]) -> None:
+    room_id = room_service.get_by_name(name=name).id
+    room_service.delete(id=room_id)
 
 if __name__ == "__main__":
     app()

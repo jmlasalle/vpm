@@ -22,7 +22,7 @@ class ElementType(BaseModel):
     model_number: int | None = Field(default=None, nullable=True)
     manual_url: str | None = Field(default=None, nullable=True)
     manufacture_url: str | None = None
-    cost: Decimal | None = Field(decimal_places=2)
+    cost: Decimal | None = Field(decimal_places=2, default=None, nullable=True)
     currency: str | None = Field(default="USD")
 
     @field_validator("currency")
