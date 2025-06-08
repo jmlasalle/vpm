@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING
 from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
-
+from pydantic import field_validator
+from ..utils.helpers import validate_currency
 
 if TYPE_CHECKING:
     from .tasks import Task
@@ -17,6 +18,10 @@ class PartType(BaseModel):
     model_number: str | None = Field(default=None)
     cost: Decimal | None = Field(default=None)
     currency: str | None = Field(default=None)
+
+    @field_validator("currency")
+    def validate_currency(cls, v):
+        return validate_currency(v)
 
 class Part(PartType, table=True):
     """Model representing a part."""

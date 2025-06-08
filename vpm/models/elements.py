@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
+from pydantic import field_validator
+from ..utils.helpers import validate_currency
 
 
 if TYPE_CHECKING:
@@ -22,6 +24,10 @@ class ElementType(BaseModel):
     cost: Decimal | None = Field(decimal_places=2)
     currency: str | None = Field(default="USD")
 
+    @field_validator("currency")
+    def validate_currency(cls, v):
+        return validate_currency(v)
+
 class Element(ElementType, table=True):
     """Model representing an equipment element."""
     serial_num: str | None = Field(default=None, nullable=True)
@@ -32,3 +38,4 @@ class Element(ElementType, table=True):
     tasks: list["Task"] = Relationship(back_populates="elements", cascade_delete=True)
     parts: list["Part"] = Relationship(back_populates="elements", cascade_delete=True)
     documents: list["Document"] = Relationship(back_populates="elements", cascade_delete=True)
+ 

@@ -3,6 +3,7 @@ from typing import Any, Dict, Optional
 from decimal import Decimal
 import json
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY
+from ..models.picklist import *
 
 def utc_now() -> datetime:
     """Get current UTC datetime."""
@@ -50,16 +51,7 @@ def json_serialize(obj: Any) -> str:
     return json.dumps(to_dict(obj), indent=2)
 
 def next_date(freq: str, interval: int, dt: datetime = None) -> datetime:
-    """Calculate the next date based on frequency and interval.
-    
-    Args:
-        freq: Frequency ('YEARLY', 'MONTHLY', 'WEEKLY', 'DAILY')
-        interval: Number of frequency units
-        dt: Start date (defaults to current date)
-    
-    Returns:
-        Next date based on frequency and interval
-    """
+    """Calculate the next date based on frequency and interval."""
     if dt is None:
         dt = datetime.now()
         
@@ -67,3 +59,34 @@ def next_date(freq: str, interval: int, dt: datetime = None) -> datetime:
         raise ValueError(f'{freq.upper()} must be one of YEARLY, MONTHLY, WEEKLY, DAILY')
         
     return rrule(freq=eval(freq.upper()), interval=interval, dtstart=dt)[1] 
+
+# validator functions
+def validate_document_category(value: str) -> str:
+    """Validate document category."""
+    if value not in DocumentCategory:
+        raise ValueError(f"Invalid document category: {value}")
+    return value
+
+def validate_task_category(value: str) -> str:
+    """Validate task category."""
+    if value not in TaskCategory:
+        raise ValueError(f"Invalid task category: {value}")
+    return value
+
+def validate_task_status(value: str) -> str:
+    """Validate task status."""
+    if value not in TaskStatus:
+        raise ValueError(f"Invalid task status: {value}")
+    return value
+
+def validate_currency(value: str) -> str:
+    """Validate currency."""
+    if value not in Currency:
+        raise ValueError(f"Invalid currency: {value}")
+    return value
+
+def validate_interval_unit(value: str) -> str:
+    """Validate interval unit."""
+    if value not in IntervalUnit:
+        raise ValueError(f"Invalid interval unit: {value}")
+    return value
