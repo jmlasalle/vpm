@@ -3,7 +3,6 @@ import typer
 from uuid import UUID
 from .services.elements import TaskService
 from .models.tasks import Task, TaskType
-from .utils.logging import logger
 from .utils.helpers import serialize
 from typing_extensions import Annotated
 from rich import print

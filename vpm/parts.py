@@ -3,7 +3,6 @@ import typer
 from uuid import UUID
 from .services.parts import PartService
 from .models.parts import Part
-from .utils.logging import logger
 from typing_extensions import Annotated
 from rich import print
 import json

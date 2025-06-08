@@ -6,7 +6,6 @@ from .services.property import RoomService
 from .services.elements import ElementService
 from .models.property import Room
 from .models.elements import Element
-from .utils.logging import logger
 
 app = typer.Typer(no_args_is_help=True)
 room_service = RoomService()

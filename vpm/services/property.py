@@ -4,7 +4,6 @@ from sqlmodel import Session, select
 from ..database import engine
 from ..models.property import Home, Room
 from .base import BaseService
-from ..utils.logging import logger
 
 class HomeService(BaseService[Home]):
     """Service for managing homes."""

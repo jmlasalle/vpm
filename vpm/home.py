@@ -5,7 +5,6 @@ from .services.property import HomeService
 from .services.elements import ElementService
 from .models.property import Home
 from .models.elements import Element
-from .utils.logging import logger
 from typing_extensions import Annotated
 from rich import print
 import json
