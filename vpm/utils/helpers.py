@@ -3,10 +3,10 @@ from typing import Any, Dict, Optional
 from decimal import Decimal
 import json
 from uuid import UUID
-from email_validator import validate_email, EmailNotValidError
+from email_validator import validate_email as validate_email_address, EmailNotValidError
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY
-from ..models.picklist import *
 import re
+import decimal
 
 def utc_now() -> datetime:
     """Get current UTC datetime."""
@@ -20,9 +20,11 @@ def format_decimal(value: Optional[Decimal], places: int = 2) -> str:
 
 def parse_decimal(value: str) -> Optional[Decimal]:
     """Parse string to Decimal, return None if invalid."""
+    if not value:
+        return None
     try:
-        return Decimal(value)
-    except (ValueError, TypeError):
+        return Decimal(str(value))
+    except (ValueError, TypeError, decimal.InvalidOperation):
         return None
 
 def serialize(obj):
@@ -30,20 +32,25 @@ def serialize(obj):
         return obj.isoformat()
     if isinstance(obj, UUID):
         return str(obj)
+    if isinstance(obj, Decimal):
+        return str(obj)
     raise TypeError(f"Type {type(obj)} not serializable")
 
-def to_dict(obj: Any) -> Dict:
-    """Convert object to dictionary, handling special types."""
-    def _serialize(obj: Any) -> Any:
-        if isinstance(obj, datetime):
-            return obj.isoformat()
-        if isinstance(obj, Decimal):
-            return str(obj)
-        if hasattr(obj, "__dict__"):
-            return {k: _serialize(v) for k, v in obj.__dict__.items()}
-        return obj
-    
-    return _serialize(obj)
+def to_dict(obj: Any) -> Any:
+    """Convert object to dictionary, handling special types recursively."""
+    if isinstance(obj, dict):
+        return {k: to_dict(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [to_dict(i) for i in obj]
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if isinstance(obj, Decimal):
+        return str(obj)
+    if isinstance(obj, UUID):
+        return str(obj)
+    if hasattr(obj, "__dict__"):
+        return to_dict(obj.__dict__)
+    return obj
 
 def json_serialize(obj: Any) -> str:
     """Serialize object to JSON string."""
@@ -64,50 +71,25 @@ def validate_str(value: str) -> str:
     """Validate string."""
     return value.strip()
 
-def validate_document_category(value: str) -> str:
-    """Validate document category."""
-    if value not in DocumentCategory:
-        raise ValueError(f"Invalid document category: {value}")
-    return value
-
-def validate_task_category(value: str) -> str:
-    """Validate task category."""
-    if value not in TaskCategory:
-        raise ValueError(f"Invalid task category: {value}")
-    return value
-
-def validate_task_status(value: str) -> str:
-    """Validate task status."""
-    if value not in TaskStatus:
-        raise ValueError(f"Invalid task status: {value}")
-    return value
-
-def validate_currency(value: str) -> str:
-    """Validate currency."""
-    if value not in Currency:
-        raise ValueError(f"Invalid currency: {value}")
-    return value
-
-def validate_interval_unit(value: str) -> str:
-    """Validate interval unit."""
-    if value not in IntervalUnit:
-        raise ValueError(f"Invalid interval unit: {value}")
-    return value
-
 def validate_email(value: str) -> str:
     """Validate email."""
     try:
-        validate_email(value)
+        validate_email_address(value, check_deliverability=True)
         return value
     except EmailNotValidError as e:
         raise ValueError(f"Invalid email: {e}")
     
 def validate_phone(value: str) -> str:
     """Validate phone."""
-    value = re.sub(r'[^+\d]', '', value)
     if not value:
         raise ValueError("Phone is required")
-    if not re.match(r"^\+?[\d]{4,19}$", value):
+    # Normalize: remove all non-digit except leading +
+    value = re.sub(r'[^\d+]', '', value)
+    if value.startswith('+'):
+        digits = value[1:]
+    else:
+        digits = value
+    if not digits.isdigit() or not (4 <= len(digits) <= 19):
         raise ValueError("Invalid phone number")
     return value
 
@@ -117,6 +99,7 @@ def validate_url(value: str) -> str:
         raise ValueError("URL is required")
     if not value.startswith(('http://', 'https://')):
         value = f"https://{value}"
-    if not re.match(r"^https?://[^\s/$.?#].[^\s]*$", value):
+    # Stricter regex: require at least one dot and a valid TLD-like ending, and at least one character before the dot
+    if not re.match(r"^https?://[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+(/.*)?$", value):
         raise ValueError("Invalid URL")
     return value    

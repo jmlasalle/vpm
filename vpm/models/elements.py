@@ -5,7 +5,8 @@ from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
 from pydantic import field_validator
-from ..utils.helpers import validate_currency, validate_url
+from ..utils.helpers import validate_url
+from .picklist import Currency
 
 
 if TYPE_CHECKING:
@@ -26,7 +27,9 @@ class ElementType(BaseModel):
 
     @field_validator("currency")
     def validate_currency(cls, v):
-        return validate_currency(v)
+        if v not in Currency:
+            raise ValueError(f"Invalid currency: {v}")
+        return v
     
     @field_validator("manual_url")
     def validate_manual_url(cls, v):
