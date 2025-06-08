@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 from decimal import Decimal
 import json
+from uuid import UUID
 from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY
 from ..models.picklist import *
 
@@ -27,10 +28,6 @@ def serialize(obj):
         return obj.isoformat()
     if isinstance(obj, UUID):
         return str(obj)
-    if isinstance(obj, TaskType):
-        return obj.value
-    if isinstance(obj, ElementType):
-        return obj.value
     raise TypeError(f"Type {type(obj)} not serializable")
 
 def to_dict(obj: Any) -> Dict:
