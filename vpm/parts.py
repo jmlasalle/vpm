@@ -1,13 +1,13 @@
 from typing import Optional
 import typer
 from uuid import UUID
-from .services.parts import PartService
-from .models.parts import Part
+from vpm.services.parts import PartService
+from vpm.models.parts import Part
 from typing_extensions import Annotated
 from rich import print
 import json
 from datetime import datetime
-from .utils.helpers import serialize
+from vpm.utils.helpers import serialize
 
 app = typer.Typer(no_args_is_help=True)
 part_service = PartService()

@@ -1,14 +1,14 @@
 from typing import Optional
 import typer
 from uuid import UUID
-from .services.elements import ElementService
-from .services.property import RoomService
-from .models.elements import Element
+from vpm.services.elements import ElementService
+from vpm.services.property import RoomService
+from vpm.models.elements import Element
 from typing_extensions import Annotated
 from rich import print
 import json
 from datetime import datetime
-from .utils.helpers import serialize
+from vpm.utils.helpers import serialize
 
 app = typer.Typer(no_args_is_help=True)
 element_service = ElementService()

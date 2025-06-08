@@ -1,5 +1,5 @@
 from sqlalchemy import text
-from .engine import engine
+from vpm.database.engine import engine
 
 def create_home_trigger():
     """Create trigger to ensure only one row exists in the home table."""

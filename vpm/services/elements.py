@@ -2,11 +2,11 @@ from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
 from sqlmodel import Session, select
-from ..database import engine
-from ..models.elements import Element
-from ..models.tasks import Task
-from .base import BaseService
-from ..utils.helpers import utc_now
+from vpm.database import engine
+from vpm.models.elements import Element
+from vpm.models.tasks import Task
+from vpm.services.base import BaseService
+from vpm.utils.helpers import utc_now
 
 class ElementService(BaseService[Element]):
     """Service for managing equipment elements."""

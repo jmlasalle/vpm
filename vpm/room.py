@@ -3,10 +3,10 @@ from typing import Optional
 from typing_extensions import Annotated
 from uuid import UUID
 from rich import print
-from .services.property import RoomService, HomeService
-from .services.elements import ElementService
-from .models.property import Room
-from .models.elements import Element
+from vpm.services.property import RoomService, HomeService
+from vpm.services.elements import ElementService
+from vpm.models.property import Room
+from vpm.models.elements import Element
 
 app = typer.Typer(no_args_is_help=True)
 room_service = RoomService()

@@ -1,15 +1,15 @@
 from sqlmodel import Field, Relationship
-from .base import BaseModel
+from vpm.models.base import BaseModel
 from typing import TYPE_CHECKING
 from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
 from pydantic import field_validator
-from .picklist import Currency
+from vpm.models.picklist import Currency
 
 if TYPE_CHECKING:
-    from .tasks import Task
-    from .elements import Element
+    from vpm.models.tasks import Task
+    from vpm.models.elements import Element
 
 class PartType(BaseModel):
     """Base type for parts."""

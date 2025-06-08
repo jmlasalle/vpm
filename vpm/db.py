@@ -1,9 +1,9 @@
 import typer
 from typing_extensions import Annotated
 from rich import print
-from .database.init import init_db
-from .database.config import engine
-from .services.database import DatabaseService
+from vpm.database.init import init_db
+from vpm.database.config import engine
+from vpm.services.database import DatabaseService
 
 app = typer.Typer(no_args_is_help=True)
 

@@ -1,0 +1,12 @@
+#!/bin/zsh
+
+source .venv/bin/activate
+
+# Install build dependencies
+pip install build wheel
+
+# Build the package
+python -m build
+
+# Install with pipx
+pipx install . -v --force

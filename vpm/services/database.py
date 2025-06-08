@@ -1,5 +1,5 @@
 from sqlalchemy import inspect
-from ..database import engine
+from vpm.database import engine
 
 class DatabaseService:
     """Service for database utility operations."""

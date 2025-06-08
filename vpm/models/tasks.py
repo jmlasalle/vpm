@@ -5,12 +5,12 @@ from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
 from pydantic import field_validator
-from ..utils.helpers import validate_url
-from .picklist import TaskCategory, IntervalUnit, Currency
+from vpm.utils.helpers import validate_url
+from vpm.models.picklist import TaskCategory, IntervalUnit, Currency
 
 if TYPE_CHECKING:
-    from .elements import Element
-    from .parts import Part
+    from vpm.models.elements import Element
+    from vpm.models.parts import Part
 
 class TaskType(BaseModel):
     """Base type for maintenance tasks."""

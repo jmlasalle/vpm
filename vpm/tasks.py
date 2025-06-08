@@ -1,9 +1,9 @@
 from typing import Optional
 import typer
 from uuid import UUID
-from .services.elements import TaskService
-from .models.tasks import Task, TaskType
-from .utils.helpers import serialize
+from vpm.services.elements import TaskService
+from vpm.models.tasks import Task, TaskType
+from vpm.utils.helpers import serialize
 from typing_extensions import Annotated
 from rich import print
 import json

@@ -5,15 +5,15 @@ from decimal import Decimal
 from datetime import datetime
 from uuid import UUID
 from pydantic import field_validator
-from ..utils.helpers import validate_url
-from .picklist import Currency
+from vpm.utils.helpers import validate_url
+from vpm.models.picklist import Currency
 
 
 if TYPE_CHECKING:
-    from .tasks import Task
-    from .parts import Part
-    from .documents import Document
-    from .property import Room
+    from vpm.models.tasks import Task
+    from vpm.models.parts import Part
+    from vpm.models.documents import Document
+    from vpm.models.property import Room
 
 class ElementType(BaseModel):
     """Base type for equipment elements."""

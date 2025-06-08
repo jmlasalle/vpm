@@ -1,8 +1,8 @@
 from typing import TypeVar, Generic, Type, Optional, List
 from uuid import UUID
 from sqlmodel import Session, select
-from ..database import engine as default_engine
-from ..models.base import BaseModel
+from vpm.database import engine as default_engine
+from vpm.models.base import BaseModel
 
 T = TypeVar('T', bound=BaseModel)
 

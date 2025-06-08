@@ -1,9 +1,9 @@
 from sqlmodel import Field, Relationship
-from .base import BaseModel
+from vpm.models.base import BaseModel
 from typing import Optional
-from .documents import Document
+from vpm.models.documents import Document
 from pydantic import field_validator
-from ..utils.helpers import validate_email, validate_phone, validate_url
+from vpm.utils.helpers import validate_email, validate_phone, validate_url
 
 class Contact(BaseModel, table=True):
     """Model representing a contact."""

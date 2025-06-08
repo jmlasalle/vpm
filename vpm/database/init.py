@@ -2,8 +2,8 @@ from sqlmodel import SQLModel
 from sqlalchemy import text
 import os
 from pathlib import Path
-from .config import engine
-from ..config import settings
+from vpm.database.config import engine
+from vpm.config.settings import settings
 
 def create_home_trigger():
     """Create trigger to ensure only one row exists in the home table."""

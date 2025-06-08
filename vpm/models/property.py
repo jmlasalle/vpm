@@ -1,11 +1,11 @@
 from sqlmodel import Field, Relationship
-from .base import BaseModel
+from vpm.models.base import BaseModel
 from typing import TYPE_CHECKING
 from uuid import UUID
 
 if TYPE_CHECKING:
-    from .elements import Element
-    from .documents import Document
+    from vpm.models.elements import Element
+    from vpm.models.documents import Document
 
 class Home(BaseModel, table=True):
     """Model representing a home property."""

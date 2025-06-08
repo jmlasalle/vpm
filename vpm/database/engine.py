@@ -1,6 +1,6 @@
 from sqlmodel import SQLModel, create_engine
 from sqlalchemy import inspect, text
-from ..config import settings
+from vpm.config.settings import settings
 
 # Create database engine
 engine = create_engine(

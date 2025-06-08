@@ -1,9 +1,9 @@
 from typing import List, Optional
 from uuid import UUID
 from sqlmodel import Session, select
-from ..database import engine
-from ..models.property import Home, Room
-from .base import BaseService
+from vpm.database import engine
+from vpm.models.property import Home, Room
+from vpm.services.base import BaseService
 
 class HomeService(BaseService[Home]):
     """Service for managing homes."""

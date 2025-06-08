@@ -10,24 +10,24 @@ from dateutil.rrule import rrule, YEARLY, MONTHLY, WEEKLY, DAILY
 from pathlib import Path
 from typing import Optional
 from uuid import UUID
-from .database.config import engine
-from .services.property import HomeService, RoomService
-from .services.elements import ElementService, TaskService
-from .services.database import DatabaseService
-from .models.property import Home, Room
-from .models.elements import Element
-from .models.tasks import Task
-from .models.parts import Part
-from .models.contacts import Contact
+from vpm.database.config import engine
+from vpm.services.property import HomeService, RoomService
+from vpm.services.elements import ElementService, TaskService
+from vpm.services.database import DatabaseService
+from vpm.models.property import Home, Room
+from vpm.models.elements import Element
+from vpm.models.tasks import Task
+from vpm.models.parts import Part
+from vpm.models.contacts import Contact
 import vpm.home
 import vpm.room
 import vpm.elements
 import vpm.tasks
 import vpm.parts
 import vpm.db
+from vpm import __version__
 
 APP_NAME = "vpm-cli"
-VERSION = "0.01"
 
 # create Typer app
 app = typer.Typer(no_args_is_help=True)
@@ -58,7 +58,7 @@ def config():
     if not config_path.is_file():
         config = {
             "app_name":APP_NAME,
-            "version": VERSION,
+            "version": __version__,
             "username": "",
             "subscribed": "False",
             "token": ""}
@@ -68,7 +68,7 @@ def config():
 @app.command()
 def version():
     """Prints the application's version number."""
-    print(f'Version {VERSION}')
+    print(f'Version {__version__}')
 
 if __name__ == "__main__":
     app()

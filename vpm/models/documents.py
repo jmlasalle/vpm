@@ -1,17 +1,17 @@
 from sqlmodel import Field, Relationship
-from .base import BaseModel
+from vpm.models.base import BaseModel
 from typing import Optional, TYPE_CHECKING
 import uuid
 from pydantic import field_validator
-from .picklist import DocumentCategory
-from ..utils.helpers import validate_url
+from vpm.models.picklist import DocumentCategory
+from vpm.utils.helpers import validate_url
 
 if TYPE_CHECKING:
-    from .property import Home, Room
-    from .elements import Element
-    from .parts import Part
-    from .tasks import Task
-    from .contacts import Contact
+    from vpm.models.property import Home, Room
+    from vpm.models.elements import Element
+    from vpm.models.parts import Part
+    from vpm.models.tasks import Task
+    from vpm.models.contacts import Contact
 
 class Document(BaseModel, table=True):
     """Model representing a document."""
