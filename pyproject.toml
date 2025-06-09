@@ -1,6 +1,6 @@
 [project]
-name = "vpm"
-version = "0.1.0"
+name = "vpm-cli"
+dynamic=["version"]
 description = "VPM is a lightweight opensource home management system"
 authors = [
     {name = "John Michael Lasalle", email = "jml@jmlasalle.com"}
@@ -33,9 +33,9 @@ dependencies = [
 vpm = "vpm.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/johnmichaellasalle/vpm"
-Repository = "https://github.com/johnmichaellasalle/vpm.git"
-Issues = "https://github.com/johnmichaellasalle/vpm/issues"
+Homepage = "https://github.com/jmlasalle/vpm"
+Repository = "https://github.com/jmlasalle/vpm.git"
+Issues = "https://github.com/jmlasalle/vpm/issues"
 
 [tool.setuptools]
 packages = ["vpm", "vpm.config", "vpm.database", "vpm.models", "vpm.services", "vpm.utils"]
