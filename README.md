@@ -1,5 +1,5 @@
 # vpm
-Virtual Property Manager (VPM) is the open source smart home operating system the world deserves. Lightweight, cross platform, command line application that builds a COBie 3.0 and IFC compliant model of your home, manages preventative maintenance tasks and logs, and organizes your home’s documents.
+Virtual Property Manager (VPM) is the open source smart home operating system the world deserves. Lightweight, cross platform, command line application that builds a COBie and IFC compliant model of your home, manages preventative maintenance tasks and logs, and organizes your home’s documents.
 
 ## Design Principles:
 1. **Data Sovereignty:** You control your home's data in perpetuity.
@@ -14,18 +14,27 @@ Virtual Property Manager (VPM) is the open source smart home operating system th
 4. Tasks that would be quick for a professional property manager with experience and relationships, such as identifying what trade is needed to fix a problem, getting and assessing bids (including benchmarking to general market costs), and hiring a contractor they trust are much harder for homeowners who only need contractor service intermittently.
 5. Smart home technology adds a layer of complexity and fragility to a home, rather than making homes more robust and self maintaining.
 
-## Integrations Roadmap
-### Smart Device Management Platforms 
-* Google Home
-* Apple HomeKit
+## Roadmap
+1. Home Model Management
+2. Task Managment
+3. Task Management App Integration
+  1. Apple reminders
+  2. Google to do
+  3. MS ToDo
+  4. Any.Do
+5. Smart Device Management Platforms Integrations
+  1. Google Home
+  2. Apple HomeKit
 
-### Task Management
-* Apple renders
-* Google to do
-* MS ToDo
-* Any.Do
+## Documentation
+### Installation
+Install vpm
+create database
 
-## VPM Web
-VPM Web is a subscription service built on VPM that provides cloud storage, multi-home support, automated maintenance tasks and reminders, simplified replacement parts ordering (in USA only for now), and a chatbot trained on your home’s data and manuals.
+### Build Home
 
-VPM Web stays true to the open-core ethos and prevents enshitifcation by allowing you to stop the subscription and keep a fully functioning local VPM model.
+### Setup Tasks
+
+### Add Documents
+
+### Export Records
