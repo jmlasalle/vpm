@@ -23,10 +23,11 @@ class TaskStatus(str, Enum):
 
 class IntervalUnit(str, Enum):
     """Unit of interval."""
-    DAY = "DAY"
-    WEEK = "WEEK"
-    MONTH = "MONTH"
-    YEAR = "YEAR"
+    HOURLY = "HOURLY"
+    DAILY = "DAILY"
+    WEEKLY = "WEEKLY"
+    MONTHLY = "MONTHLY"
+    YEARLY = "YEARLY"
 
 class Currency(str,Enum):
     """Currency of element."""

@@ -2,6 +2,7 @@ from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
 from sqlmodel import Session, select
+from dateutil.rrule import *
 from vpm.database import engine
 from vpm.models.elements import Element
 from vpm.models.tasks import Task
@@ -51,3 +52,13 @@ class TaskService(BaseService[Task]):
             complete=True,
             date_complete=utc_now()
         ) 
+    def create_recurring_task(self, task: Task) -> Optional[Task]:
+        """Create a recurring task."""
+        if task.interval is not None:
+            task.due_date = rrule(
+                freq=eval(task.interval_unit),
+                interval=task.interval,
+                count=1,
+                dtstart=task.date_complete
+            )
+        return self.create(task)

@@ -1,48 +1,34 @@
-from typing import Optional
 import typer
-from uuid import UUID
-from vpm.services.elements import TaskService
-from vpm.models.tasks import Task, TaskType
-from vpm.utils.helpers import serialize
 from typing_extensions import Annotated
 from rich import print
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
+from vpm.services.elements import TaskService, ElementService
+from vpm.models.tasks import Task, TaskType
+from vpm.utils.helpers import serialize
 
 app = typer.Typer(no_args_is_help=True)
 task_service = TaskService()
+element_service = ElementService()
 
 @app.command(help="Adds a new task to the local database.")
 def add(
-    name: Annotated[str, typer.Option(prompt="Task name")],
-    type: Annotated[str, typer.Option(prompt="Task type", help="Type of task (MAINTENANCE, REPAIR, REPLACE, INSPECT)")] = "MAINTENANCE",
-    description: Annotated[str, typer.Option(prompt="Description")] = None,
-    due_date: Annotated[datetime | None, typer.Option()] = None,
-    interval: Annotated[int | None, typer.Option(help="Interval for recurring task")] = None,
-    interval_unit: Annotated[str | None, typer.Option(help="Unit for interval (days, weeks, months, years)")] = None,
-    priority: Annotated[int | None, typer.Option()] = None
+    element_name: Annotated[str, typer.Option(prompt="Element name", help="Name of the element to add the task to")],
+    name: Annotated[str, typer.Option(prompt="Task name", help="Name of the task")],
+    description: Annotated[str, typer.Option(prompt="Description", help="Description of how to complete the task")] = None,
+    due_date: Annotated[datetime | None, typer.Option(prompt="Due date (YYYY-MM-DD)", help="Due date of the task")] = None,
+    interval_unit: Annotated[str | None, typer.Option(prompt="Interval unit", help="Unit for interval (daily, weekly, monthly, yearly)")] = None,
+    interval: Annotated[int | None, typer.Option(prompt="Interval", help="Interval for recurring task")] = None
 ) -> None:
+    element = element_service.get_by_name(name=element_name)
     try:
-        # Calculate due date if interval is provided
-        if interval is not None and interval_unit is not None:
-            if interval_unit == "days":
-                due_date = datetime.now() + timedelta(days=interval)
-            elif interval_unit == "weeks":
-                due_date = datetime.now() + timedelta(weeks=interval)
-            elif interval_unit == "months":
-                # Approximate months as 30 days
-                due_date = datetime.now() + timedelta(days=interval * 30)
-            elif interval_unit == "years":
-                # Approximate years as 365 days
-                due_date = datetime.now() + timedelta(days=interval * 365)
-            else:
-                raise ValueError(f"Invalid interval unit: {interval_unit}. Must be one of: days, weeks, months, years")
-
         new_task = Task(
+            element_id=element.id,
             name=name,
             description=description,
             due_date=due_date,
-            priority=priority
+            interval=interval,
+            interval_unit=interval_unit,
         )
         task = task_service.create(new_task)
         print(json.dumps(task.model_dump(), indent=4, default=serialize))
@@ -79,6 +65,12 @@ def update(
     except Exception as e:
         print(f"Error: {str(e)}")
 
+@app.command(help="Get all tasks")
+def all() -> None:
+    tasks = task_service.get_all()
+    for task in tasks:
+        print(json.dumps(task.model_dump(), indent=4, default=serialize))
+
 @app.command(help="Delete a task")
 def delete(
     name: Annotated[str, typer.Option(prompt="Task name")]
@@ -104,9 +96,12 @@ def complete(
             completed_at=datetime.now()
         )
         print(f'Task "{name}" marked as complete')
-            
+        
     except Exception as e:
         print(f"Error: {str(e)}")
+    if task.interval is not None:
+        new_task = task_service.create_recurring_task(task)
+        print(json.dumps(new_task.model_dump(), indent=4, default=serialize))
 
 if __name__ == "__main__":
     app() 

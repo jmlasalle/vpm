@@ -27,6 +27,9 @@ class TaskType(BaseModel):
 
     @field_validator("interval_unit")
     def validate_interval_unit(cls, v):
+        if v is None:
+            return v
+        v = str(v).upper()
         if v not in IntervalUnit:
             raise ValueError(f"Invalid interval unit: {v}")
         return v
